@@ -1,0 +1,810 @@
+/*
+ * X11 kernel implementation.
+ *
+ * ==========================(LICENSE BEGIN)============================
+ *
+ * Copyright (c) 2014  phm
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * ===========================(LICENSE END)=============================
+ *
+ * @author   phm <phm@inbox.com>
+ */
+
+#ifndef DARKCOIN_CL
+#define DARKCOIN_CL
+
+#if __ENDIAN_LITTLE__
+#define SPH_LITTLE_ENDIAN 1
+#else
+#define SPH_BIG_ENDIAN 1
+#endif
+
+#define SPH_UPTR sph_u64
+
+typedef uint sph_u32;
+typedef int  sph_s32;
+
+#ifndef __OPENCL_VERSION__
+typedef unsigned long long sph_u64;
+typedef long long sph_s64;
+#else
+typedef unsigned long sph_u64;
+typedef long sph_s64;
+#endif
+
+#define SPH_64 1
+#define SPH_64_TRUE 1
+
+#define SPH_C32(x)    ((sph_u32)(x ## U))
+#define SPH_T32(x)    ((x) & SPH_C32(0xFFFFFFFF))
+#define SPH_ROTL32(x, n)   SPH_T32(((x) << (n)) | ((x) >> (32 - (n))))
+#define SPH_ROTR32(x, n)   SPH_ROTL32(x, (32 - (n)))
+
+#define SPH_C64(x)    ((sph_u64)(x ## UL))
+#define SPH_T64(x)    ((x) & SPH_C64(0xFFFFFFFFFFFFFFFF))
+#define SPH_ROTL64(x, n)   SPH_T64(((x) << (n)) | ((x) >> (64 - (n))))
+#define SPH_ROTR64(x, n)   SPH_ROTL64(x, (64 - (n)))
+
+
+#define SWAP4(x) as_uint(as_uchar4(x).wzyx)
+#define SWAP8(x) as_ulong(as_uchar8(x).s76543210)
+
+#if SPH_BIG_ENDIAN
+    #define DEC64E(x) (x)
+    #define DEC64BE(x) (*(const __global sph_u64 *) (x));
+#else
+    #define DEC64E(x) SWAP8(x)
+    #define DEC64BE(x) SWAP8(*(const __global sph_u64 *) (x));
+#endif
+
+
+#define SPH_ECHO_64 1
+#define SPH_KECCAK_64 1
+#define SPH_JH_64 1
+#define SPH_SIMD_NOCOPY 0
+#define SPH_KECCAK_NOCOPY 0
+#define SPH_COMPACT_BLAKE_64 0
+#define SPH_LUFFA_PARALLEL 0
+#define SPH_SMALL_FOOTPRINT_GROESTL 0
+#define SPH_GROESTL_BIG_ENDIAN 0
+
+#define SPH_CUBEHASH_UNROLL 0
+#define SPH_KECCAK_UNROLL   0
+
+
+#include "blake.cl"
+#include "bmw.cl"
+#include "groestl.cl"
+#include "jh.cl"
+#include "keccak.cl"
+#include "skein.cl"
+#include "luffa.cl"
+#include "cubehash.cl"
+#include "shavite.cl"
+#include "simd.cl"
+#include "echo.cl"
+
+
+#define BLAKE512_COMPRESS64(BITLEN) \
+		M0 = X[0]; \
+		M1 = X[1]; \
+		M2 = X[2]; \
+		M3 = X[3]; \
+		M4 = X[4]; \
+		M5 = X[5]; \
+		M6 = X[6]; \
+		M7 = X[7]; \
+		MB = 0; \
+		MC = 0; \
+		MD = 1; \
+		ME = 0; \
+		MF = BITLEN; \
+		V0 = H0; \
+		V1 = H1; \
+		V2 = H2; \
+		V3 = H3; \
+		V4 = H4; \
+		V5 = H5; \
+		V6 = H6; \
+		V7 = H7; \
+		V8 = CB0; \
+		V9 = CB1; \
+		VA = CB2; \
+		VB = CB3; \
+		VC = CB4 ^ BITLEN; \
+		VD = CB5 ^ BITLEN; \
+		VE = CB6; \
+		VF = CB7; \
+		ROUND_B(0); \
+		ROUND_B(1); \
+		ROUND_B(2); \
+		ROUND_B(3); \
+		ROUND_B(4); \
+		ROUND_B(5); \
+		ROUND_B(6); \
+		ROUND_B(7); \
+		ROUND_B(8); \
+		ROUND_B(9); \
+		ROUND_B(0); \
+		ROUND_B(1); \
+		ROUND_B(2); \
+		ROUND_B(3); \
+		ROUND_B(4); \
+		ROUND_B(5); \
+		X[0] = H0 ^ V0 ^ V8; \
+		X[1] = H1 ^ V1 ^ V9; \
+		X[2] = H2 ^ V2 ^ VA; \
+		X[3] = H3 ^ V3 ^ VB; \
+		X[4] = H4 ^ V4 ^ VC; \
+		X[5] = H5 ^ V5 ^ VD; \
+		X[6] = H6 ^ V6 ^ VE; \
+		X[7] = H7 ^ V7 ^ VF;
+
+
+void BLAKE512_80(ulong X[8], ulong X8, ulong X9)	{
+     ulong H0 = BLAKE_IV512[0], H1 = BLAKE_IV512[1];
+     ulong H2 = BLAKE_IV512[2], H3 = BLAKE_IV512[3];
+     ulong H4 = BLAKE_IV512[4], H5 = BLAKE_IV512[5];
+     ulong H6 = BLAKE_IV512[6], H7 = BLAKE_IV512[7];
+     ulong M0, M1, M2, M3, M4, M5, M6, M7;
+     ulong M8, M9, MA, MB, MC, MD, ME, MF;
+		 ulong V0, V1, V2, V3, V4, V5, V6, V7;
+		 ulong V8, V9, VA, VB, VC, VD, VE, VF;
+     M8 = X8;
+     M9 = X9;
+     MA = 0x8000000000000000;
+     BLAKE512_COMPRESS64(0x280);
+}    
+
+void BLAKE512_64(ulong X[8])	{
+     ulong H0 = BLAKE_IV512[0], H1 = BLAKE_IV512[1];
+     ulong H2 = BLAKE_IV512[2], H3 = BLAKE_IV512[3];
+     ulong H4 = BLAKE_IV512[4], H5 = BLAKE_IV512[5];
+     ulong H6 = BLAKE_IV512[6], H7 = BLAKE_IV512[7];
+     ulong M0, M1, M2, M3, M4, M5, M6, M7;
+     ulong M8, M9, MA, MB, MC, MD, ME, MF;
+		 ulong V0, V1, V2, V3, V4, V5, V6, V7;
+		 ulong V8, V9, VA, VB, VC, VD, VE, VF;
+		 M8 = 0x8000000000000000;
+		 M9 = 0;
+		 MA = 0;
+		 BLAKE512_COMPRESS64(0x200);
+}
+
+
+void BMW512(ulong X[8]) {
+     ulong BMW_h1[16], BMW_h2[16], mv[16];
+     for (uint u = 0; u <  8; u++) mv[u] = SWAP8(X[u]);
+     mv[0x08] = 0x80;
+     mv[0x09] = 0;
+     mv[0x0A] = 0;
+     mv[0x0B] = 0;
+     mv[0x0C] = 0;
+     mv[0x0D] = 0;
+     mv[0x0E] = 0;
+     mv[0x0F] = 0x200;		
+#define M(x)    (mv[x])
+#define H(x)    (BMW_IV512[x]) // BMW_h0[x])
+#define dH(x)   (BMW_h2[x])
+     FOLDb;
+#undef M
+#undef H
+#undef dH
+
+#define M(x)    (BMW_h2[x])
+#define H(x)    (final_b[x])
+#define dH(x)   (BMW_h1[x])
+     FOLDb;
+#undef M
+#undef H
+#undef dH
+     for (uint u = 0; u <  8; u ++) X[u]  = SWAP8(BMW_h1[u + 0x08]);
+}
+
+
+void GROESTL512(ulong X[8]) {
+     ulong g[16], m[16], x[16]; //  H[16];
+	   ulong H[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+     #if USE_LE
+         0x2000000000000UL };
+     #else
+         0x200UL };
+     #endif
+     #pragma unroll
+		 for (uint u = 0; u < 8; u++) m[u] = DEC64E(X[u]);
+		 #pragma unroll
+		 for (uint u = 0; u < 8; u++) g[u] = m[u];
+		 m[0x08] = 0x80;              g[0x08] = 0x80;
+		 m[0x09] = 0;                 g[0x09] = 0;
+		 m[0x0A] = 0;                 g[0x0A] = 0;
+		 m[0x0B] = 0;                 g[0x0B] = 0;
+		 m[0x0C] = 0;                 g[0x0C] = 0;
+		 m[0x0D] = 0;                 g[0x0D] = 0;
+		 m[0x0E] = 0;                 g[0x0E] = 0;
+		 m[0x0F] = 0x100000000000000; g[0x0F] = m[0x0F] ^ H[0x0F];
+		 for (uint r = 0; r < 14; r++) {
+			   ROUND_BIG_P(g, r);
+		 }
+		 for (uint r = 0; r < 14; r++) {
+			   ROUND_BIG_Q(m, r);
+		 }
+		 for (uint u = 0; u < 16; u++) x[u]  = (H[u] ^= (g[u] ^ m[u]));
+		 for (uint r = 0; r < 14; r++) {
+         ROUND_BIG_P(x, r);
+		 }
+		 #pragma unroll
+		 for (uint u = 8; u < 16; u++) H[u] ^= x[u];
+		 #pragma unroll
+		 for (uint u = 0; u <  8; u++) X[u]  = DEC64E(H[u + 0x08]);
+}
+
+
+void SKEIN512(ulong X[8]) {
+     ulong h0 = SKEIN_IV512[0x00], h1 = SKEIN_IV512[0x01];
+	   ulong h2 = SKEIN_IV512[0x02], h3 = SKEIN_IV512[0x03];
+	   ulong h4 = SKEIN_IV512[0x04], h5 = SKEIN_IV512[0x05];
+	   ulong h6 = SKEIN_IV512[0x06], h7 = SKEIN_IV512[0x07];
+     ulong m0 = SWAP8(X[0x00]);
+     ulong m1 = SWAP8(X[0x01]);
+     ulong m2 = SWAP8(X[0x02]);
+     ulong m3 = SWAP8(X[0x03]);
+     ulong m4 = SWAP8(X[0x04]);
+     ulong m5 = SWAP8(X[0x05]);
+     ulong m6 = SWAP8(X[0x06]);
+     ulong m7 = SWAP8(X[0x07]);
+     ulong bcount = 0;
+     UBI_BIG(480, 64);
+     bcount = 0;
+     m0 = m1 = m2 = m3 = m4 = m5 = m6 = m7 = 0;
+     UBI_BIG(510, 8);
+     X[0x00] = SWAP8(h0);
+     X[0x01] = SWAP8(h1);
+     X[0x02] = SWAP8(h2);
+     X[0x03] = SWAP8(h3);
+     X[0x04] = SWAP8(h4);
+     X[0x05] = SWAP8(h5);
+     X[0x06] = SWAP8(h6);
+     X[0x07] = SWAP8(h7);
+}
+
+
+void JH512(ulong X[8]) {
+     ulong h0h = JH_IV512[0x00], h0l = JH_IV512[0x01];
+	   ulong h1h = JH_IV512[0x02], h1l = JH_IV512[0x03];
+     ulong h2h = JH_IV512[0x04], h2l = JH_IV512[0x05];
+     ulong h3h = JH_IV512[0x06], h3l = JH_IV512[0x07];
+     ulong h4h = JH_IV512[0x08], h4l = JH_IV512[0x09];
+	   ulong h5h = JH_IV512[0x0A], h5l = JH_IV512[0x0B];
+	   ulong h6h = JH_IV512[0x0C], h6l = JH_IV512[0x0D];
+     ulong h7h = JH_IV512[0x0E], h7l = JH_IV512[0x0F];
+     ulong tmp;
+     for(uint i = 0; i < 2; i++) {
+        if (i == 0) {
+            h0h ^= DEC64E(X[0x00]);
+            h0l ^= DEC64E(X[0x01]);
+            h1h ^= DEC64E(X[0x02]);
+            h1l ^= DEC64E(X[0x03]);
+            h2h ^= DEC64E(X[0x04]);
+            h2l ^= DEC64E(X[0x05]);
+            h3h ^= DEC64E(X[0x06]);
+            h3l ^= DEC64E(X[0x07]);
+        } else if (i == 1) {
+            h4h ^= DEC64E(X[0x00]);
+            h4l ^= DEC64E(X[0x01]);
+            h5h ^= DEC64E(X[0x02]);
+            h5l ^= DEC64E(X[0x03]);
+            h6h ^= DEC64E(X[0x04]);
+            h6l ^= DEC64E(X[0x05]);
+            h7h ^= DEC64E(X[0x06]);
+            h7l ^= DEC64E(X[0x07]);
+            h0h ^= 0x80;
+            h3l ^= 0x2000000000000;
+        }
+        E8;
+     }
+     h4h ^= 0x80;
+     h7l ^= 0x2000000000000;
+     X[0x00] = DEC64E(h4h);
+     X[0x01] = DEC64E(h4l);
+     X[0x02] = DEC64E(h5h);
+     X[0x03] = DEC64E(h5l);
+     X[0x04] = DEC64E(h6h);
+     X[0x05] = DEC64E(h6l);
+     X[0x06] = DEC64E(h7h);
+     X[0x07] = DEC64E(h7l);
+}
+	
+void KECCAK512(ulong X[8]) {
+     ulong a00  =  SWAP8(X[0x00]);
+     ulong a01  =  SWAP8(X[0x05]);
+     ulong a02  =  0;
+	   ulong a03  =  0;
+     ulong a04  =  0xFFFFFFFFFFFFFFFFUL;
+     ulong a10  = ~SWAP8(X[0x01]);
+     ulong a11  =  SWAP8(X[0x06]);
+     ulong a12  =  0;
+	   ulong a13  =  0;
+	   ulong a14  =  0; 
+     ulong a20  = ~SWAP8(X[0x02]);
+     ulong a21  =  SWAP8(X[0x07]);
+     ulong a22  =  0xFFFFFFFFFFFFFFFFUL;
+     ulong a23  =  0xFFFFFFFFFFFFFFFFUL;
+     ulong a24  =  0;
+     ulong a30  =  SWAP8(X[0x03]);
+     ulong a31  =  0x7FFFFFFFFFFFFFFEUL;
+     ulong a32  =  0;
+	   ulong a33  =  0;
+	   ulong a34  =  0;
+     ulong a40  =  SWAP8(X[0x04]);
+     ulong a41  =  0;
+	   ulong a42  =  0;
+	   ulong a43  =  0;
+	   ulong a44  =  0;
+     KECCAK_F_1600;
+     a10        = ~a10;
+     a20        = ~a20;
+     X[0x00]    = SWAP8(a00);
+     X[0x01]    = SWAP8(a10);
+     X[0x02]    = SWAP8(a20);
+     X[0x03]    = SWAP8(a30);
+     X[0x04]    = SWAP8(a40);
+     X[0x05]    = SWAP8(a01);
+     X[0x06]    = SWAP8(a11);
+     X[0x07]    = SWAP8(a21);
+}
+
+
+
+void SIMD32(uint X[16], uchar XC[64]) {
+	
+    s32   q[256];
+    uchar x[128];
+    for (uint i =  0; i <  64; i++) x[i] = XC[i];
+    for (uint i = 64; i < 128; i++) x[i] = 0;
+    FFT256(0, 1, 0, ll1);
+    for (int i = 0; i < 256; i ++) {
+        s32 tq;
+        tq = q[i] + yoff_b_n[i];
+        tq = REDS2(tq);
+        tq = REDS1(tq);
+        tq = REDS1(tq);
+        q[i] = (tq <= 128 ? tq : tq - 257);
+    }
+    uint A0 = SIMD_IV512[0x00] ^ X[0x00];
+    uint A1 = SIMD_IV512[0x01] ^ X[0x01];
+    uint A2 = SIMD_IV512[0x02] ^ X[0x02];
+    uint A3 = SIMD_IV512[0x03] ^ X[0x03];
+    uint A4 = SIMD_IV512[0x04] ^ X[0x04];
+    uint A5 = SIMD_IV512[0x05] ^ X[0x05];
+    uint A6 = SIMD_IV512[0x06] ^ X[0x06];
+    uint A7 = SIMD_IV512[0x07] ^ X[0x07];
+    uint B0 = SIMD_IV512[0x08] ^ X[0x08];
+    uint B1 = SIMD_IV512[0x09] ^ X[0x09];
+    uint B2 = SIMD_IV512[0x0A] ^ X[0x0A];
+    uint B3 = SIMD_IV512[0x0B] ^ X[0x0B];
+    uint B4 = SIMD_IV512[0x0C] ^ X[0x0C];
+    uint B5 = SIMD_IV512[0x0D] ^ X[0x0D];
+    uint B6 = SIMD_IV512[0x0E] ^ X[0x0E];
+    uint B7 = SIMD_IV512[0x0F] ^ X[0x0F];
+    uint C0 = SIMD_IV512[0x10];
+    uint C1 = SIMD_IV512[0x11];
+    uint C2 = SIMD_IV512[0x12];
+    uint C3 = SIMD_IV512[0x13];
+    uint C4 = SIMD_IV512[0x14];
+    uint C5 = SIMD_IV512[0x15];
+    uint C6 = SIMD_IV512[0x16];
+    uint C7 = SIMD_IV512[0x17];
+    uint D0 = SIMD_IV512[0x18];
+    uint D1 = SIMD_IV512[0x19];
+    uint D2 = SIMD_IV512[0x1A];
+    uint D3 = SIMD_IV512[0x1B];
+    uint D4 = SIMD_IV512[0x1C];
+    uint D5 = SIMD_IV512[0x1D];
+    uint D6 = SIMD_IV512[0x1E];
+    uint D7 = SIMD_IV512[0x1F];		
+		
+    ONE_ROUND_BIG(0_, 0,  3, 23, 17, 27);
+    ONE_ROUND_BIG(1_, 1, 28, 19, 22,  7);
+    ONE_ROUND_BIG(2_, 2, 29,  9, 15,  5);
+    ONE_ROUND_BIG(3_, 3,  4, 13, 10, 25);
+
+    STEP_BIG(SIMD_IV512[0x00], SIMD_IV512[0x01], SIMD_IV512[0x02], SIMD_IV512[0x03], SIMD_IV512[0x04], SIMD_IV512[0x05], SIMD_IV512[0x06], SIMD_IV512[0x07], IF,  4, 13, PP8_4_);
+    STEP_BIG(SIMD_IV512[0x08], SIMD_IV512[0x09], SIMD_IV512[0x0A], SIMD_IV512[0x0B], SIMD_IV512[0x0C], SIMD_IV512[0x0D], SIMD_IV512[0x0E], SIMD_IV512[0x0F], IF, 13, 10, PP8_5_);
+    STEP_BIG(SIMD_IV512[0x10], SIMD_IV512[0x11], SIMD_IV512[0x12], SIMD_IV512[0x13], SIMD_IV512[0x14], SIMD_IV512[0x15], SIMD_IV512[0x16], SIMD_IV512[0x17], IF, 10, 25, PP8_6_);
+    STEP_BIG(SIMD_IV512[0x18], SIMD_IV512[0x19], SIMD_IV512[0x1A], SIMD_IV512[0x1B], SIMD_IV512[0x1C], SIMD_IV512[0x1D], SIMD_IV512[0x1E], SIMD_IV512[0x1F], IF, 25,  4, PP8_0_);
+
+    u32 COPY_A0 = A0, COPY_A1 = A1, COPY_A2 = A2, COPY_A3 = A3, COPY_A4 = A4, COPY_A5 = A5, COPY_A6 = A6, COPY_A7 = A7;
+    u32 COPY_B0 = B0, COPY_B1 = B1, COPY_B2 = B2, COPY_B3 = B3, COPY_B4 = B4, COPY_B5 = B5, COPY_B6 = B6, COPY_B7 = B7;
+    u32 COPY_C0 = C0, COPY_C1 = C1, COPY_C2 = C2, COPY_C3 = C3, COPY_C4 = C4, COPY_C5 = C5, COPY_C6 = C6, COPY_C7 = C7;
+    u32 COPY_D0 = D0, COPY_D1 = D1, COPY_D2 = D2, COPY_D3 = D3, COPY_D4 = D4, COPY_D5 = D5, COPY_D6 = D6, COPY_D7 = D7;
+
+    #define q SIMD_Q
+    A0 ^= 0x200;
+    ONE_ROUND_BIG(0_, 0,  3, 23, 17, 27);
+    ONE_ROUND_BIG(1_, 1, 28, 19, 22,  7);
+    ONE_ROUND_BIG(2_, 2, 29,  9, 15,  5);
+    ONE_ROUND_BIG(3_, 3,  4, 13, 10, 25);
+    STEP_BIG(COPY_A0, COPY_A1, COPY_A2, COPY_A3, COPY_A4, COPY_A5, COPY_A6, COPY_A7, IF,  4, 13, PP8_4_);
+    STEP_BIG(COPY_B0, COPY_B1, COPY_B2, COPY_B3, COPY_B4, COPY_B5, COPY_B6, COPY_B7, IF, 13, 10, PP8_5_);
+    STEP_BIG(COPY_C0, COPY_C1, COPY_C2, COPY_C3, COPY_C4, COPY_C5, COPY_C6, COPY_C7, IF, 10, 25, PP8_6_);
+    STEP_BIG(COPY_D0, COPY_D1, COPY_D2, COPY_D3, COPY_D4, COPY_D5, COPY_D6, COPY_D7, IF, 25,  4, PP8_0_);
+    #undef q
+
+    X[0x00] = A0;
+    X[0x01] = A1;
+    X[0x02] = A2;
+    X[0x03] = A3;
+    X[0x04] = A4;
+    X[0x05] = A5;
+    X[0x06] = A6;
+    X[0x07] = A7;
+    X[0x08] = B0;
+    X[0x09] = B1;
+    X[0x0A] = B2;
+    X[0x0B] = B3;
+    X[0x0C] = B4;
+    X[0x0D] = B5;
+    X[0x0E] = B6;
+    X[0x0F] = B7;
+}
+
+//#define WORKSIZE   64
+
+__attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
+__kernel void search(__global unsigned char* block, volatile __global uint* output, const ulong target) {
+	
+	__local uint AES0[256], AES1[256], AES2[256], AES3[256];
+    uint init = get_local_id(0);
+    uint step = get_local_size(0);
+    for (uint i = init; i < 256; i += step) {
+        AES0[i] = AES0_C[i];
+        AES1[i] = AES1_C[i];
+        AES2[i] = AES2_C[i];
+        AES3[i] = AES3_C[i];
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+		uint  gid = SWAP4(get_global_id(0));
+		ulong X8;
+		ulong X9;
+    union {
+        uchar   h1[64];
+        uint    h4[16];
+        ulong   h8[8];
+    } X;
+
+
+		X.h8[0]  = DEC64BE(block +  0);
+    X.h8[1]  = DEC64BE(block +  8);
+    X.h8[2]  = DEC64BE(block + 16);
+    X.h8[3]  = DEC64BE(block + 24);
+    X.h8[4]  = DEC64BE(block + 32);
+    X.h8[5]  = DEC64BE(block + 40);
+    X.h8[6]  = DEC64BE(block + 48);
+    X.h8[7]  = DEC64BE(block + 56);
+    X8       = DEC64BE(block + 64);
+    X9       = DEC64BE(block + 72);
+    X9      &= 0xFFFFFFFF00000000;
+    X9      ^= gid;
+
+    BLAKE512_80(X.h8, X8, X9);
+		BMW512(X.h8);
+    GROESTL512(X.h8);
+		SKEIN512(X.h8);
+    JH512(X.h8);
+    KECCAK512(X.h8);		
+		
+		//
+		// LUFFA
+		//
+     uint V00 = V_INIT[0][0], V01 = V_INIT[0][1], V02 = V_INIT[0][2], V03 = V_INIT[0][3], V04 = V_INIT[0][4], V05 = V_INIT[0][5], V06 = V_INIT[0][6], V07 = V_INIT[0][7];
+	   uint V10 = V_INIT[1][0], V11 = V_INIT[1][1], V12 = V_INIT[1][2], V13 = V_INIT[1][3], V14 = V_INIT[1][4], V15 = V_INIT[1][5], V16 = V_INIT[1][6], V17 = V_INIT[1][7];
+	   uint V20 = V_INIT[2][0], V21 = V_INIT[2][1], V22 = V_INIT[2][2], V23 = V_INIT[2][3], V24 = V_INIT[2][4], V25 = V_INIT[2][5], V26 = V_INIT[2][6], V27 = V_INIT[2][7];
+	   uint V30 = V_INIT[3][0], V31 = V_INIT[3][1], V32 = V_INIT[3][2], V33 = V_INIT[3][3], V34 = V_INIT[3][4], V35 = V_INIT[3][5], V36 = V_INIT[3][6], V37 = V_INIT[3][7];
+	   uint V40 = V_INIT[4][0], V41 = V_INIT[4][1], V42 = V_INIT[4][2], V43 = V_INIT[4][3], V44 = V_INIT[4][4], V45 = V_INIT[4][5], V46 = V_INIT[4][6], V47 = V_INIT[4][7];
+     uint M0 = X.h4[0x01];
+     uint M1 = X.h4[0x00];
+     uint M2 = X.h4[0x03];
+     uint M3 = X.h4[0x02];
+     uint M4 = X.h4[0x05];
+     uint M5 = X.h4[0x04];
+     uint M6 = X.h4[0x07];
+     uint M7 = X.h4[0x06];
+     for (uint i = 0; i < 5; i++) {
+         MI5;
+         LUFFA_P5;
+         if (i == 0) {
+            M0 = X.h4[0x09];
+            M1 = X.h4[0x08];
+            M2 = X.h4[0x0B];
+            M3 = X.h4[0x0A];
+            M4 = X.h4[0x0D];
+            M5 = X.h4[0x0C];
+            M6 = X.h4[0x0F];
+            M7 = X.h4[0x0E];
+         } 
+				 else if (i == 1) {
+            M0 = 0x80000000;
+            M1 = M2 = M3 = M4 = M5 = M6 = M7 = 0;
+         } 
+				 else if (i == 2) {
+            M0 = M1 = M2 = M3 = M4 = M5 = M6 = M7 = 0;
+         } 
+				 else if (i == 3) {
+            X.h4[0x01] = V00 ^ V10 ^ V20 ^ V30 ^ V40;
+            X.h4[0x00] = V01 ^ V11 ^ V21 ^ V31 ^ V41;
+            X.h4[0x03] = V02 ^ V12 ^ V22 ^ V32 ^ V42;
+            X.h4[0x02] = V03 ^ V13 ^ V23 ^ V33 ^ V43;
+            X.h4[0x05] = V04 ^ V14 ^ V24 ^ V34 ^ V44;
+            X.h4[0x04] = V05 ^ V15 ^ V25 ^ V35 ^ V45;
+            X.h4[0x07] = V06 ^ V16 ^ V26 ^ V36 ^ V46;
+            X.h4[0x06] = V07 ^ V17 ^ V27 ^ V37 ^ V47;
+         }
+     }
+     X.h4[0x09] = V00 ^ V10 ^ V20 ^ V30 ^ V40;
+     X.h4[0x08] = V01 ^ V11 ^ V21 ^ V31 ^ V41;
+     X.h4[0x0B] = V02 ^ V12 ^ V22 ^ V32 ^ V42;
+     X.h4[0x0A] = V03 ^ V13 ^ V23 ^ V33 ^ V43;
+     X.h4[0x0D] = V04 ^ V14 ^ V24 ^ V34 ^ V44;
+     X.h4[0x0C] = V05 ^ V15 ^ V25 ^ V35 ^ V45;
+     X.h4[0x0F] = V06 ^ V16 ^ V26 ^ V36 ^ V46;
+     X.h4[0x0E] = V07 ^ V17 ^ V27 ^ V37 ^ V47;		
+		
+		 //
+		 // CUBEHASH
+		 //
+     uint x0 = CUBEHASH_IV512[0x00], x1 = CUBEHASH_IV512[0x01], x2 = CUBEHASH_IV512[0x02], x3 = CUBEHASH_IV512[0x03];
+     uint x4 = CUBEHASH_IV512[0x04], x5 = CUBEHASH_IV512[0x05], x6 = CUBEHASH_IV512[0x06], x7 = CUBEHASH_IV512[0x07];
+     uint x8 = CUBEHASH_IV512[0x08], x9 = CUBEHASH_IV512[0x09], xa = CUBEHASH_IV512[0x0A], xb = CUBEHASH_IV512[0x0B];
+     uint xc = CUBEHASH_IV512[0x0C], xd = CUBEHASH_IV512[0x0D], xe = CUBEHASH_IV512[0x0E], xf = CUBEHASH_IV512[0x0F];
+     uint xg = CUBEHASH_IV512[0x10], xh = CUBEHASH_IV512[0x11], xi = CUBEHASH_IV512[0x12], xj = CUBEHASH_IV512[0x13];
+     uint xk = CUBEHASH_IV512[0x14], xl = CUBEHASH_IV512[0x15], xm = CUBEHASH_IV512[0x16], xn = CUBEHASH_IV512[0x17];
+     uint xo = CUBEHASH_IV512[0x18], xp = CUBEHASH_IV512[0x19], xq = CUBEHASH_IV512[0x1A], xr = CUBEHASH_IV512[0x1B];
+     uint xs = CUBEHASH_IV512[0x1C], xt = CUBEHASH_IV512[0x1D], xu = CUBEHASH_IV512[0x1E], xv = CUBEHASH_IV512[0x1F];
+     x0 ^= SWAP4(X.h4[0x01]);
+     x1 ^= SWAP4(X.h4[0x00]);
+     x2 ^= SWAP4(X.h4[0x03]);
+     x3 ^= SWAP4(X.h4[0x02]);
+     x4 ^= SWAP4(X.h4[0x05]);
+     x5 ^= SWAP4(X.h4[0x04]);
+     x6 ^= SWAP4(X.h4[0x07]);
+     x7 ^= SWAP4(X.h4[0x06]);
+     for (uint i = 0; i < 13; i ++) {
+			   for (uint j = 0; j < 8; j++) {
+			 		   ROUND_EVEN;
+		         ROUND_ODD;
+				 }
+         if (i == 0) {
+            x0 ^= SWAP4(X.h4[0x09]);
+            x1 ^= SWAP4(X.h4[0x08]);
+            x2 ^= SWAP4(X.h4[0x0B]);
+            x3 ^= SWAP4(X.h4[0x0A]);
+            x4 ^= SWAP4(X.h4[0x0D]);
+            x5 ^= SWAP4(X.h4[0x0C]);
+            x6 ^= SWAP4(X.h4[0x0F]);
+            x7 ^= SWAP4(X.h4[0x0E]);
+         } 
+				 else if (i == 1) {
+            x0 ^= 0x00000080U;
+         } 
+				 else if (i == 2) {
+            xv ^= 0x00000001U;
+         }
+     }
+     X.h4[0x00] = x0;
+     X.h4[0x01] = x1;
+     X.h4[0x02] = x2;
+     X.h4[0x03] = x3;
+     X.h4[0x04] = x4;
+     X.h4[0x05] = x5;
+     X.h4[0x06] = x6;
+     X.h4[0x07] = x7;
+     X.h4[0x08] = x8;
+     X.h4[0x09] = x9;
+     X.h4[0x0A] = xa;
+     X.h4[0x0B] = xb;
+     X.h4[0x0C] = xc;
+     X.h4[0x0D] = xd;
+     X.h4[0x0E] = xe;
+     X.h4[0x0F] = xf;
+		 
+     //SHAVITE		
+		 sph_u32 h0 = SPH_C32(0x72FCCDD8), h1 = SPH_C32(0x79CA4727), h2 = SPH_C32(0x128A077B), h3 = SPH_C32(0x40D55AEC);
+     sph_u32 h4 = SPH_C32(0xD1901A06), h5 = SPH_C32(0x430AE307), h6 = SPH_C32(0xB29F5CD1), h7 = SPH_C32(0xDF07FBFC);
+     sph_u32 h8 = SPH_C32(0x8E45D73D), h9 = SPH_C32(0x681AB538), hA = SPH_C32(0xBDE86578), hB = SPH_C32(0xDD577E47);
+     sph_u32 hC = SPH_C32(0xE275EADE), hD = SPH_C32(0x502D9FCD), hE = SPH_C32(0xB9357178), hF = SPH_C32(0x022A4B9A);
+     sph_u32 rk00, rk01, rk02, rk03, rk04, rk05, rk06, rk07;
+     sph_u32 rk08, rk09, rk0A, rk0B, rk0C, rk0D, rk0E, rk0F;
+     sph_u32 rk10, rk11, rk12, rk13, rk14, rk15, rk16, rk17;
+     sph_u32 rk18, rk19, rk1A, rk1B, rk1C, rk1D, rk1E, rk1F;
+     sph_u32 sc_count0 = (64 << 3), sc_count1 = 0, sc_count2 = 0, sc_count3 = 0;
+     rk00 = X.h4[0];
+     rk01 = X.h4[1];
+     rk02 = X.h4[2];
+     rk03 = X.h4[3];
+     rk04 = X.h4[4];
+     rk05 = X.h4[5];
+     rk06 = X.h4[6];
+     rk07 = X.h4[7];
+     rk08 = X.h4[8];
+     rk09 = X.h4[9];
+     rk0A = X.h4[10];
+     rk0B = X.h4[11];
+     rk0C = X.h4[12];
+     rk0D = X.h4[13];
+     rk0E = X.h4[14];
+     rk0F = X.h4[15];
+     rk10 = 0x80;
+     rk11 = rk12 = rk13 = rk14 = rk15 = rk16 = rk17 = rk18 = rk19 = rk1A = 0;
+     rk1B = 0x2000000;
+     rk1C = rk1D = rk1E = 0;
+     rk1F = 0x2000000;
+     c512(buf);
+     X.h4[0] = h0;
+     X.h4[1] = h1;
+     X.h4[2] = h2;
+     X.h4[3] = h3;
+     X.h4[4] = h4;
+     X.h4[5] = h5;
+     X.h4[6] = h6;
+     X.h4[7] = h7;
+     X.h4[8] = h8;
+     X.h4[9] = h9;
+     X.h4[10] = hA;
+     X.h4[11] = hB;
+     X.h4[12] = hC;
+     X.h4[13] = hD;
+     X.h4[14] = hE;
+     X.h4[15] = hF;
+		 
+	  //
+		// SIMD 
+		//
+    s32   q[256];
+		s32   tq;
+    uchar x[128];
+    for (uint i =  0; i <  64; i++) x[i] = X.h1[i];
+    for (uint i = 64; i < 128; i++) x[i] = 0;
+    FFT256(0, 1, 0, ll1);
+    for (uint i =  0; i < 256; i ++) {
+        tq = q[i] + yoff_b_n[i];
+        tq = REDS2(tq);
+        tq = REDS1(tq);
+        tq = REDS1(tq);
+        q[i] = (tq <= 128 ? tq : tq - 257);
+    }
+    uint A0 = SIMD_IV512[0x00] ^ X.h4[0x00];
+    uint A1 = SIMD_IV512[0x01] ^ X.h4[0x01];
+    uint A2 = SIMD_IV512[0x02] ^ X.h4[0x02];
+    uint A3 = SIMD_IV512[0x03] ^ X.h4[0x03];
+    uint A4 = SIMD_IV512[0x04] ^ X.h4[0x04];
+    uint A5 = SIMD_IV512[0x05] ^ X.h4[0x05];
+    uint A6 = SIMD_IV512[0x06] ^ X.h4[0x06];
+    uint A7 = SIMD_IV512[0x07] ^ X.h4[0x07];
+    uint B0 = SIMD_IV512[0x08] ^ X.h4[0x08];
+    uint B1 = SIMD_IV512[0x09] ^ X.h4[0x09];
+    uint B2 = SIMD_IV512[0x0A] ^ X.h4[0x0A];
+    uint B3 = SIMD_IV512[0x0B] ^ X.h4[0x0B];
+    uint B4 = SIMD_IV512[0x0C] ^ X.h4[0x0C];
+    uint B5 = SIMD_IV512[0x0D] ^ X.h4[0x0D];
+    uint B6 = SIMD_IV512[0x0E] ^ X.h4[0x0E];
+    uint B7 = SIMD_IV512[0x0F] ^ X.h4[0x0F];
+    uint C0 = SIMD_IV512[0x10];
+    uint C1 = SIMD_IV512[0x11];
+    uint C2 = SIMD_IV512[0x12];
+    uint C3 = SIMD_IV512[0x13];
+    uint C4 = SIMD_IV512[0x14];
+    uint C5 = SIMD_IV512[0x15];
+    uint C6 = SIMD_IV512[0x16];
+    uint C7 = SIMD_IV512[0x17];
+    uint D0 = SIMD_IV512[0x18];
+    uint D1 = SIMD_IV512[0x19];
+    uint D2 = SIMD_IV512[0x1A];
+    uint D3 = SIMD_IV512[0x1B];
+    uint D4 = SIMD_IV512[0x1C];
+    uint D5 = SIMD_IV512[0x1D];
+    uint D6 = SIMD_IV512[0x1E];
+    uint D7 = SIMD_IV512[0x1F];		
+		
+    ONE_ROUND_BIG(0_, 0,  3, 23, 17, 27);
+    ONE_ROUND_BIG(1_, 1, 28, 19, 22,  7);
+    ONE_ROUND_BIG(2_, 2, 29,  9, 15,  5);
+    ONE_ROUND_BIG(3_, 3,  4, 13, 10, 25);
+
+    STEP_BIG(SIMD_IV512[0x00], SIMD_IV512[0x01], SIMD_IV512[0x02], SIMD_IV512[0x03], SIMD_IV512[0x04], SIMD_IV512[0x05], SIMD_IV512[0x06], SIMD_IV512[0x07], IF,  4, 13, PP8_4_);
+    STEP_BIG(SIMD_IV512[0x08], SIMD_IV512[0x09], SIMD_IV512[0x0A], SIMD_IV512[0x0B], SIMD_IV512[0x0C], SIMD_IV512[0x0D], SIMD_IV512[0x0E], SIMD_IV512[0x0F], IF, 13, 10, PP8_5_);
+    STEP_BIG(SIMD_IV512[0x10], SIMD_IV512[0x11], SIMD_IV512[0x12], SIMD_IV512[0x13], SIMD_IV512[0x14], SIMD_IV512[0x15], SIMD_IV512[0x16], SIMD_IV512[0x17], IF, 10, 25, PP8_6_);
+    STEP_BIG(SIMD_IV512[0x18], SIMD_IV512[0x19], SIMD_IV512[0x1A], SIMD_IV512[0x1B], SIMD_IV512[0x1C], SIMD_IV512[0x1D], SIMD_IV512[0x1E], SIMD_IV512[0x1F], IF, 25,  4, PP8_0_);
+
+    u32 COPY_A0 = A0, COPY_A1 = A1, COPY_A2 = A2, COPY_A3 = A3, COPY_A4 = A4, COPY_A5 = A5, COPY_A6 = A6, COPY_A7 = A7;
+    u32 COPY_B0 = B0, COPY_B1 = B1, COPY_B2 = B2, COPY_B3 = B3, COPY_B4 = B4, COPY_B5 = B5, COPY_B6 = B6, COPY_B7 = B7;
+    u32 COPY_C0 = C0, COPY_C1 = C1, COPY_C2 = C2, COPY_C3 = C3, COPY_C4 = C4, COPY_C5 = C5, COPY_C6 = C6, COPY_C7 = C7;
+    u32 COPY_D0 = D0, COPY_D1 = D1, COPY_D2 = D2, COPY_D3 = D3, COPY_D4 = D4, COPY_D5 = D5, COPY_D6 = D6, COPY_D7 = D7;
+
+    #define q SIMD_Q
+    A0 ^= 0x200;
+    ONE_ROUND_BIG(0_, 0,  3, 23, 17, 27);
+    ONE_ROUND_BIG(1_, 1, 28, 19, 22,  7);
+    ONE_ROUND_BIG(2_, 2, 29,  9, 15,  5);
+    ONE_ROUND_BIG(3_, 3,  4, 13, 10, 25);
+    STEP_BIG(COPY_A0, COPY_A1, COPY_A2, COPY_A3, COPY_A4, COPY_A5, COPY_A6, COPY_A7, IF,  4, 13, PP8_4_);
+    STEP_BIG(COPY_B0, COPY_B1, COPY_B2, COPY_B3, COPY_B4, COPY_B5, COPY_B6, COPY_B7, IF, 13, 10, PP8_5_);
+    STEP_BIG(COPY_C0, COPY_C1, COPY_C2, COPY_C3, COPY_C4, COPY_C5, COPY_C6, COPY_C7, IF, 10, 25, PP8_6_);
+    STEP_BIG(COPY_D0, COPY_D1, COPY_D2, COPY_D3, COPY_D4, COPY_D5, COPY_D6, COPY_D7, IF, 25,  4, PP8_0_);
+    #undef q
+
+    X.h4[0x00] = A0;
+    X.h4[0x01] = A1;
+    X.h4[0x02] = A2;
+    X.h4[0x03] = A3;
+    X.h4[0x04] = A4;
+    X.h4[0x05] = A5;
+    X.h4[0x06] = A6;
+    X.h4[0x07] = A7;
+    X.h4[0x08] = B0;
+    X.h4[0x09] = B1;
+    X.h4[0x0A] = B2;
+    X.h4[0x0B] = B3;
+    X.h4[0x0C] = B4;
+    X.h4[0x0D] = B5;
+    X.h4[0x0E] = B6;
+    X.h4[0x0F] = B7;
+	 
+		//
+		// ECHO
+		//
+	  uint  K0 = 512;
+	  uint  K1 = 0;
+	  uint  K2 = 0;
+	  uint  K3 = 0;
+	  ulong W00, W10, W20, W30, W40, W50, W60, W70;
+	  ulong W01, W11, W21, W31, W41, W51, W61, W71;
+	  ulong W80 = X.h8[0x00];
+	  ulong W81 = X.h8[0x01];
+	  ulong W90 = X.h8[0x02];
+	  ulong W91 = X.h8[0x03];
+	  ulong WA0 = X.h8[0x04];
+	  ulong WA1 = X.h8[0x05];
+	  ulong WB0 = X.h8[0x06];
+	  ulong WB1 = X.h8[0x07];
+	  ulong WC0 = 0x80;
+	  ulong WC1 = 0;
+	  ulong WD0 = 0;
+	  ulong WD1 = 0;
+	  ulong WE0 = 0;
+	  ulong WE1 = 0x200000000000000;
+	  ulong WF0 = 0x200;
+	  ulong WF1 = 0;
+	  W00 = W10 = W20 = W30 = W40 = W50 = W60 = W70 = 512UL;
+	  W01 = W11 = W21 = W31 = W41 = W51 = W61 = W71 = 0;
+	  for (uint u = 0; u < 10; u++) {
+        BIG_ROUND;
+    }
+	  X.h8[3] ^= W11 ^ W91;
+
+    if (X.h8[3] <= target) {
+        output[output[0xFF]++] = gid;
+		}
+		
+}
+
+#endif // DARKCOIN_CL
