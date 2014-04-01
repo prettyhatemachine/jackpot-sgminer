@@ -32,7 +32,7 @@
 #define HAVE_STRING_H 1
 
 /* Define to 1 if you have the `strtoll' function. */
-#define HAVE_STRTOLL 1
+/* #undef HAVE_STRTOLL */
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #define HAVE_SYS_STAT_H 1

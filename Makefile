@@ -38,7 +38,7 @@ host_triplet = i686-pc-mingw32
 target_triplet = i686-pc-mingw32
 bin_PROGRAMS = sgminer$(EXEEXT)
 #am__append_1 = @CPPFLAG_CURL_STATICLIB@ -IC:/mingw/include 
-#am__append_2 = -DGIT_VERSION=\"$(GIT_VERSION)\"
+am__append_2 = -DGIT_VERSION=\"$(GIT_VERSION)\"
 subdir = .
 DIST_COMMON = $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
@@ -206,8 +206,8 @@ AWK = gawk
 BITSIZEOF_PTRDIFF_T = 32
 BITSIZEOF_SIG_ATOMIC_T = 0
 BITSIZEOF_SIZE_T = 0
-BITSIZEOF_WCHAR_T = 16
-BITSIZEOF_WINT_T = 0
+BITSIZEOF_WCHAR_T = 0
+BITSIZEOF_WINT_T = 16
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -O2 -msse2
@@ -475,7 +475,7 @@ sgminer_LDADD = $(DLOPEN_FLAGS) -LC:/mingw/lib -lcurl -lcurldll  compat/jansson-
 		  -lOpenCL   -lws2_32 \
 		  -lwinmm  -lm lib/libgnu.a ccan/libccan.a sph/libsph.a
 
-#GIT_VERSION := $(shell sh -c 'git describe --abbrev=4 --dirty')
+GIT_VERSION := $(shell sh -c 'git describe --abbrev=4 --dirty')
 sgminer_SOURCES := sgminer.c api.c elist.h miner.h compat.h \
 	bench_block.h util.c util.h uthash.h sha2.c sha2.h logging.c \
 	logging.h driver-opencl.c driver-opencl.h ocl.c ocl.h \

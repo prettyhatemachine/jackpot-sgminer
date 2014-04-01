@@ -23,10 +23,10 @@
 #define BITSIZEOF_SIZE_T 0
 
 /* Define to the number of bits in type 'wchar_t'. */
-#define BITSIZEOF_WCHAR_T 16
+#define BITSIZEOF_WCHAR_T 0
 
 /* Define to the number of bits in type 'wint_t'. */
-#define BITSIZEOF_WINT_T 0
+#define BITSIZEOF_WINT_T 16
 
 /* Filename for original scrypt kernel */
 #define CKOLIVAS_KERNNAME "ckolivas"

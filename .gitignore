@@ -1,3 +1,17 @@
+.git/
+.deps/
+.libs/
+autom4te.cache/
+*.a
+*.la
+*.o
+*.lo
+*.Po
+*.Plo
+.*
+stamp-h1
+*.in~
+
 #################
 ## Eclipse
 #################
