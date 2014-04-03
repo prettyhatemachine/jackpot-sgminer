@@ -6,18 +6,33 @@
 This is the updated version of SPH SGMINER to support AdvSHA3 Secure Hashing Method.
 
 
+AdvSHA3
+
+   1 round SHA3 (Keccak) input hashing with 
+   9 rounds random using 4 (BLACK, JH, GROESTL, SKEIN) candidates hashing methods are applied,
+   
+   It is the most secure hashing method, using ALU and Internal Memory of GPU to reduce
+   the power consumption.
+  
+   for The ASIC, due to the complicity of code, it is hard to apply on ASIC quickly.
+   Becasue of the cost of ASIC is higher than 10x than the general scrypt ASIC.
+   It means, this method has 3~5 years ASIC resist, but, it is very easy to design ASIC,
+   It is the fair way to support CPU/GPU miner at beginning, and 
+   the fair way to support ASIC at the network maintenance stage after 3~5 years.
+
+
+
+**git tree**: https://github.com/rtc29462/sgminer
+
+
+===========================================================================
+
+
 This is a multi-threaded multi-pool GPU miner with ATI GPU monitoring,
 (over)clocking and fanspeed support for scrypt-based coins. It is based on
 cgminer by Con Kolivas (ckolivas), which is in turn based on cpuminer by
 Jeff Garzik (jgarzik).
 
-**releases**: https://github.com/veox/sgminer/releases
-
-**git tree**: https://github.com/veox/sgminer
-
-**issues**: https://github.com/veox/sgminer/issues
-
-**irc**: `#sgminer` on freenode
 
 License: GPLv3.  See `COPYING` for details.
 
