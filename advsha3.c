@@ -99,27 +99,8 @@ void advsha3_regenhash(struct work *work) {
      be32enc_vect(data, (const uint32_t *)work->data, 19);
      data[19] = htobe32(*nonce);
 
-     /*
-     int j, i;
-     char * ptr = (char *)(&data[0]);
-     printf("\n");
-     printf("HASH INPUT\n");
-     for (j = 0; j < 80; j++) {
-         printf(" %02x", (unsigned char)ptr[j]);
-     }
-    */
-
      advsha3_hash(ohash, data);
 
-     /*
-     int    j;
-     char * ptr = (char *)(&ohash[0]);
-     printf("\n");
-     printf("HASH RESULT\n");
-     for (j = 0; j < 32; j++) {
-         printf(" %02x", (unsigned char)ptr[j]);
-     }
-     */
 }
 
 

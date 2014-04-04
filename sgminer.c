@@ -95,6 +95,7 @@ bool opt_quiet;
 bool opt_realquiet;
 bool opt_loginput;
 bool opt_compact;
+bool opt_debughash;
 const int opt_cutofftemp = 95;
 int opt_log_interval = 5;
 int opt_queue = 1;
@@ -1119,6 +1120,9 @@ static struct opt_table opt_config_table[] = {
 	OPT_WITHOUT_ARG("--debug|-D",
 		     enable_debug, &opt_debug,
 		     "Enable debug output"),
+	OPT_WITHOUT_ARG("--debug-hash",
+		     enable_debug, &opt_debughash,
+		     "Enable debug output for hash"),
 	OPT_WITH_ARG("--device|-d",
 		     set_devices, NULL, NULL,
 	             "Select device to use, one value, range and/or comma separated (e.g. 0-2,4) default: all"),
@@ -1781,7 +1785,6 @@ static void gen_gbt_work(struct pool *pool, struct work *work)
 
 	if (opt_debug) {
 		char *header = bin2hex(work->data, 128);
-
 		applog(LOG_DEBUG, "Generated GBT header %s", header);
 		applog(LOG_DEBUG, "Work coinbase %s", work->coinbase);
 		free(header);
@@ -2069,7 +2072,7 @@ static void suffix_string(uint64_t val, char *buf, size_t bufsiz, int sigdigits)
 		strcpy(suffix, "K");
 	} else {
 		dval = val;
-		decimal = true;
+		decimal = false;
 	}
 
 	if (!sigdigits) {
@@ -2778,6 +2781,12 @@ static bool get_upstream_work(struct work *work, CURL *curl)
 			applog(LOG_DEBUG, "Failed to decode work in get_upstream_work");
 	} else
 		applog(LOG_DEBUG, "Failed json_rpc_call in get_upstream_work");
+
+	if (opt_debug) {
+		char *header = bin2hex(work->data, 128);
+		applog(LOG_DEBUG, "DBG: result : %s", header);
+		free(header);
+	}
 
 	cgtime(&work->tv_getwork_reply);
 	timersub(&(work->tv_getwork_reply), &(work->tv_getwork), &tv_elapsed);
@@ -3916,7 +3925,7 @@ static void set_blockdiff(const struct work *work)
 
         double bdiff = ddiff / DM_SELECT(1, 1, 65536);
 
-		suffix_string(bdiff, block_diff, sizeof(block_diff), 0);
+		suffix_string_double(bdiff, block_diff, sizeof(block_diff), 0);
 		current_diff = ddiff;
 		applog(LOG_NOTICE, "Network diff set to %s", block_diff);
 	}
@@ -6099,6 +6108,15 @@ static void rebuild_nonce(struct work *work, uint32_t nonce)
 			scrypt_regenhash(work);
 			break;
 	}
+
+    if (opt_debug) {
+		char *htarget = bin2hex(work->data, 80);
+		applog(LOG_DEBUG, "REGEN DATA : %s", htarget);
+		htarget = bin2hex(work->hash, 32);
+		applog(LOG_DEBUG, "REGEN HASH : %s", htarget);
+		free(htarget);
+	}
+
 }
 
 /* For testing a nonce against diff 1 */
