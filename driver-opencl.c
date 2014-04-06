@@ -222,6 +222,10 @@ static enum cl_kernels select_kernel(char *arg) {
 		return KL_ANIMECOIN;
 	if (!strcmp(arg, GROESTLCOIN_KERNNAME))
 		return KL_GROESTLCOIN;
+  	if (!strcmp(arg, SIFCOIN_KERNNAME))
+		return KL_SIFCOIN;
+	if (!strcmp(arg, TWECOIN_KERNNAME))
+		return KL_TWECOIN;
 	if (!strcmp(arg, ADVSHA3_KERNNAME))
 		return KL_ADVSHA3;
 	return KL_NONE;
@@ -1403,6 +1407,12 @@ static bool opencl_thread_prepare(struct thr_info *thr)
 			case KL_GROESTLCOIN:
 				cgpu->kname = GROESTLCOIN_KERNNAME;
 				break;
+            case KL_SIFCOIN:
+				cgpu->kname = SIFCOIN_KERNNAME;
+				break;
+			case KL_TWECOIN:
+				cgpu->kname = TWECOIN_KERNNAME;
+				break;
             case KL_ADVSHA3:
                 cgpu->kname = ADVSHA3_KERNNAME;
                 break;
@@ -1567,7 +1577,6 @@ static int64_t opencl_scanhash(struct thr_info *thr, struct work *work,
 	if ((thrdata->res[found])) {
 
       /*
-
         int j, i;
         char * data = (char *)thrdata->res;
         printf("\n");
@@ -1581,7 +1590,6 @@ static int64_t opencl_scanhash(struct thr_info *thr, struct work *work,
         for (j = 0; j < 64; j++) {
             printf(" %02x", (unsigned char)data[256 + 128 + j]);
         }
-
 
        */
 

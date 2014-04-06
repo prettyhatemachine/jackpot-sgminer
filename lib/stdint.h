@@ -511,17 +511,17 @@ typedef int _verify_intmax_size[sizeof (intmax_t) == sizeof (uintmax_t)
 #undef WCHAR_MIN
 #undef WCHAR_MAX
 #define WCHAR_MIN  \
-   _STDINT_MIN (0, 0, 0)
+   _STDINT_MIN (0, 16, 0)
 #define WCHAR_MAX  \
-   _STDINT_MAX (0, 0, 0)
+   _STDINT_MAX (0, 16, 0)
 
 /* wint_t limits */
 #undef WINT_MIN
 #undef WINT_MAX
 #define WINT_MIN  \
-   _STDINT_MIN (0, 16, 0)
+   _STDINT_MIN (0, 0, 0)
 #define WINT_MAX  \
-   _STDINT_MAX (0, 16, 0)
+   _STDINT_MAX (0, 0, 0)
 
 #endif /* !defined __cplusplus || defined __STDC_LIMIT_MACROS */
 

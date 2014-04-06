@@ -16800,6 +16800,16 @@ _ACEOF
 
 
 cat >>confdefs.h <<_ACEOF
+#define SIFCOIN_KERNNAME "sifcoin"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define TWECOIN_KERNNAME "twecoin"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
 #define ADVSHA3_KERNNAME "advsha3"
 _ACEOF
 
@@ -16818,7 +16828,7 @@ _ACEOF
 
 
 
-ac_config_files="$ac_config_files Makefile compat/Makefile ccan/Makefile lib/Makefile sph/Makefile"
+ac_config_files="$ac_config_files  Makefile compat/Makefile ccan/Makefile lib/Makefile sph/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -17898,11 +17908,12 @@ do
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
-    "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
-    "compat/Makefile") CONFIG_FILES="$CONFIG_FILES compat/Makefile" ;;
-    "ccan/Makefile") CONFIG_FILES="$CONFIG_FILES ccan/Makefile" ;;
-    "lib/Makefile") CONFIG_FILES="$CONFIG_FILES lib/Makefile" ;;
-    "sph/Makefile") CONFIG_FILES="$CONFIG_FILES sph/Makefile" ;;
+    "") CONFIG_FILES="$CONFIG_FILES " ;;
+    "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "compat/Makefile") CONFIG_FILES="$CONFIG_FILES compat/Makefile" ;;
+    "ccan/Makefile") CONFIG_FILES="$CONFIG_FILES ccan/Makefile" ;;
+    "lib/Makefile") CONFIG_FILES="$CONFIG_FILES lib/Makefile" ;;
+    "sph/Makefile") CONFIG_FILES="$CONFIG_FILES sph/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5 ;;
   esac

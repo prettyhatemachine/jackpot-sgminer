@@ -50,6 +50,8 @@ sgminer_SOURCES += fuguecoin.c fuguecoin.h
 sgminer_SOURCES += inkcoin.c inkcoin.h
 sgminer_SOURCES += animecoin.c animecoin.h
 sgminer_SOURCES += groestlcoin.c groestlcoin.h
+sgminer_SOURCES += sifcoin.c sifcoin.h
+sgminer_SOURCES += twecoin.c twecoin.h
 sgminer_SOURCES += advsha3.c advsha3.h
 sgminer_SOURCES += kernel/*.cl
 

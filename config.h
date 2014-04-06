@@ -23,10 +23,10 @@
 #define BITSIZEOF_SIZE_T 0
 
 /* Define to the number of bits in type 'wchar_t'. */
-#define BITSIZEOF_WCHAR_T 0
+#define BITSIZEOF_WCHAR_T 16
 
 /* Define to the number of bits in type 'wint_t'. */
-#define BITSIZEOF_WINT_T 16
+#define BITSIZEOF_WINT_T 0
 
 /* Filename for original scrypt kernel */
 #define CKOLIVAS_KERNNAME "ckolivas"
@@ -353,6 +353,9 @@
 /* Path to sgminer install */
 #define SGMINER_PREFIX "/usr/local/bin"
 
+/* Filename for Sifcoin optimised kernel */
+#define SIFCOIN_KERNNAME "sifcoin"
+
 /* Define to l, ll, u, ul, ull, etc., as suitable for constants of type
    'sig_atomic_t'. */
 #define SIG_ATOMIC_T_SUFFIX 
@@ -371,6 +374,9 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
+
+/* Filename for Twecoin optimised kernel */
+#define TWECOIN_KERNNAME "twecoin"
 
 /* Use GIT version in version string */
 /* #undef USE_GIT_VERSION */

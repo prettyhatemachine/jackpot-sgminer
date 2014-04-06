@@ -73,7 +73,8 @@ am_libsph_a_OBJECTS = bmw.$(OBJEXT) echo.$(OBJEXT) jh.$(OBJEXT) \
 	luffa.$(OBJEXT) simd.$(OBJEXT) blake.$(OBJEXT) \
 	cubehash.$(OBJEXT) groestl.$(OBJEXT) keccak.$(OBJEXT) \
 	shavite.$(OBJEXT) skein.$(OBJEXT) sha2.$(OBJEXT) \
-	sha2big.$(OBJEXT) fugue.$(OBJEXT)
+	sha2big.$(OBJEXT) fugue.$(OBJEXT) hamsi.$(OBJEXT) \
+	panama.$(OBJEXT)
 libsph_a_OBJECTS = $(am_libsph_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -374,7 +375,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 version_info = @version_info@
 noinst_LIBRARIES = libsph.a
-libsph_a_SOURCES = bmw.c echo.c jh.c luffa.c simd.c blake.c cubehash.c groestl.c keccak.c shavite.c skein.c sha2.c sha2big.c fugue.c
+libsph_a_SOURCES = bmw.c echo.c jh.c luffa.c simd.c blake.c cubehash.c groestl.c keccak.c shavite.c skein.c sha2.c sha2big.c fugue.c hamsi.c panama.c
 all: all-am
 
 .SUFFIXES:
@@ -429,9 +430,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/echo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fugue.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/groestl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hamsi.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jh.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keccak.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/luffa.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/panama.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sha2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sha2big.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shavite.Po@am__quote@

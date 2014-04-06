@@ -352,6 +352,9 @@
 /* Path to sgminer install */
 #undef SGMINER_PREFIX
 
+/* Filename for Sifcoin optimised kernel */
+#undef SIFCOIN_KERNNAME
+
 /* Define to l, ll, u, ul, ull, etc., as suitable for constants of type
    'sig_atomic_t'. */
 #undef SIG_ATOMIC_T_SUFFIX
@@ -370,6 +373,9 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
+
+/* Filename for Twecoin optimised kernel */
+#undef TWECOIN_KERNNAME
 
 /* Use GIT version in version string */
 #undef USE_GIT_VERSION

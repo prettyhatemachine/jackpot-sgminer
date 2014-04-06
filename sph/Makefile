@@ -73,7 +73,8 @@ am_libsph_a_OBJECTS = bmw.$(OBJEXT) echo.$(OBJEXT) jh.$(OBJEXT) \
 	luffa.$(OBJEXT) simd.$(OBJEXT) blake.$(OBJEXT) \
 	cubehash.$(OBJEXT) groestl.$(OBJEXT) keccak.$(OBJEXT) \
 	shavite.$(OBJEXT) skein.$(OBJEXT) sha2.$(OBJEXT) \
-	sha2big.$(OBJEXT) fugue.$(OBJEXT)
+	sha2big.$(OBJEXT) fugue.$(OBJEXT) hamsi.$(OBJEXT) \
+	panama.$(OBJEXT)
 libsph_a_OBJECTS = $(am_libsph_a_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -120,8 +121,8 @@ AWK = gawk
 BITSIZEOF_PTRDIFF_T = 32
 BITSIZEOF_SIG_ATOMIC_T = 0
 BITSIZEOF_SIZE_T = 0
-BITSIZEOF_WCHAR_T = 0
-BITSIZEOF_WINT_T = 16
+BITSIZEOF_WCHAR_T = 16
+BITSIZEOF_WINT_T = 0
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -O2 -msse2
@@ -374,7 +375,7 @@ top_builddir = ..
 top_srcdir = ..
 version_info = 5:0:1
 noinst_LIBRARIES = libsph.a
-libsph_a_SOURCES = bmw.c echo.c jh.c luffa.c simd.c blake.c cubehash.c groestl.c keccak.c shavite.c skein.c sha2.c sha2big.c fugue.c
+libsph_a_SOURCES = bmw.c echo.c jh.c luffa.c simd.c blake.c cubehash.c groestl.c keccak.c shavite.c skein.c sha2.c sha2big.c fugue.c hamsi.c panama.c
 all: all-am
 
 .SUFFIXES:
@@ -429,9 +430,11 @@ include ./$(DEPDIR)/cubehash.Po
 include ./$(DEPDIR)/echo.Po
 include ./$(DEPDIR)/fugue.Po
 include ./$(DEPDIR)/groestl.Po
+include ./$(DEPDIR)/hamsi.Po
 include ./$(DEPDIR)/jh.Po
 include ./$(DEPDIR)/keccak.Po
 include ./$(DEPDIR)/luffa.Po
+include ./$(DEPDIR)/panama.Po
 include ./$(DEPDIR)/sha2.Po
 include ./$(DEPDIR)/sha2big.Po
 include ./$(DEPDIR)/shavite.Po

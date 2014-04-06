@@ -158,6 +158,7 @@ int opt_tcp_keepalive = 30;
 #else
 int opt_tcp_keepalive;
 #endif
+double opt_diff_mult = 1.0;
 
 char *opt_kernel_path;
 char *sgminer_path;
@@ -248,7 +249,7 @@ static char blocktime[32];
 struct timeval block_timeval;
 static char best_share[8] = "0";
 double current_diff = 0xFFFFFFFFFFFFFFFFULL;
-static char block_diff[8];
+static char block_diff[12];
 double best_diff = 0;
 
 struct block {
@@ -1063,6 +1064,18 @@ static char *set_null(const char __maybe_unused *arg)
 	return NULL;
 }
 
+char *set_difficulty_multiplier(char *arg)
+{
+	char **endptr = NULL;
+	if (!(arg && arg[0]))
+		return "Invalid parameters for set difficulty multiplier";
+	opt_diff_mult = strtod(arg, endptr);
+	if (opt_diff_mult == 0 || endptr == arg)
+		return "Invalid value passed to set difficulty multiplier";
+
+	return NULL;
+}
+
 /* These options are available from config file or commandline */
 static struct opt_table opt_config_table[] = {
 	OPT_WITH_ARG("--api-allow",
@@ -1365,6 +1378,9 @@ static struct opt_table opt_config_table[] = {
 			"Display extra work time debug information"),
 	OPT_WITH_ARG("--pools",
 			opt_set_bool, NULL, NULL, opt_hidden),
+   	OPT_WITH_ARG("--difficulty-multiplier",
+			set_difficulty_multiplier, NULL, NULL,
+			"Difficulty multiplier for jobs received from stratum pools"),
 	OPT_ENDTABLE
 };
 
@@ -1785,6 +1801,7 @@ static void gen_gbt_work(struct pool *pool, struct work *work)
 
 	if (opt_debug) {
 		char *header = bin2hex(work->data, 128);
+
 		applog(LOG_DEBUG, "Generated GBT header %s", header);
 		applog(LOG_DEBUG, "Work coinbase %s", work->coinbase);
 		free(header);
@@ -2973,16 +2990,16 @@ static void calc_diff(struct work *work, double known)
 	double difficulty;
 	uint64_t uintdiff;
 
-	if (known)
+	if (known) {
 		work->work_difficulty = known;
+    }
 	else {
 		double d64, dcut64;
-
 		d64 = (double) DM_SELECT(1, 256, 65536) * truediffone;
-
 		dcut64 = le256todouble(work->target);
-		if (unlikely(!dcut64))
+		if (unlikely(!dcut64)) {
 			dcut64 = 1;
+        }
 		work->work_difficulty = d64 / dcut64;
 	}
 	difficulty = work->work_difficulty;
@@ -3915,16 +3932,23 @@ static int block_sort(struct block *blocka, struct block *blockb)
 /* Decode the current block difficulty which is in packed form */
 static void set_blockdiff(const struct work *work)
 {
-	uint8_t pow = work->data[72];
-	int powdiff = (8 * (0x1d - 3)) - (8 * (pow - 3));
-	uint32_t diff32 = be32toh(*((uint32_t *)(work->data + 72))) & 0x00FFFFFF;
-	double numerator = DM_SELECT(0xFFFFULL, 0xFFFFFFULL, 0xFFFFFFFFULL) << powdiff;
-	double ddiff = numerator / (double)diff32;
-
+    uint8_t  pow;
+    int      powdiff;
+    uint32_t diff32;
+    double   numerator;
+    double   ddiff;
+	pow       = work->data[72];
+	powdiff   = (8 * (0x1d - 3)) - (8 * (pow - 3));
+	diff32    = be32toh(*((uint32_t *)(work->data + 72))) & 0x00FFFFFF;
+    if (powdiff >= 0) {
+	   numerator = DM_SELECT(0xFFFFULL, 0xFFFFFFULL, 0xFFFFFFFFULL) << powdiff;
+    }
+    else {
+ 	   numerator = DM_SELECT(0xFFFFULL, 0xFFFFFFULL, 0xFFFFFFFFULL) >> (-powdiff);
+    }
+	ddiff = numerator / (double)diff32;
 	if (unlikely(current_diff != ddiff)) {
-
         double bdiff = ddiff / DM_SELECT(1, 1, 65536);
-
 		suffix_string_double(bdiff, block_diff, sizeof(block_diff), 0);
 		current_diff = ddiff;
 		applog(LOG_NOTICE, "Network diff set to %s", block_diff);
@@ -4269,6 +4293,12 @@ void write_config(FILE *fcfg)
 					break;
 				case KL_GROESTLCOIN:
 					fprintf(fcfg, GROESTLCOIN_KERNNAME);
+                    break;
+                case KL_SIFCOIN:
+					fprintf(fcfg, SIFCOIN_KERNNAME);
+					break;
+				case KL_TWECOIN:
+					fprintf(fcfg, TWECOIN_KERNNAME);
                     break;
                 case KL_ADVSHA3:
 					fprintf(fcfg, ADVSHA3_KERNNAME);
@@ -5924,6 +5954,10 @@ static void gen_stratum_work(struct pool *pool, struct work *work)
 	cg_dwlock(&pool->data_lock);
 
 	/* Generate merkle root */
+	if (gpus[0].kernel == KL_FUGUECOIN || gpus[0].kernel == KL_GROESTLCOIN || gpus[0].kernel == KL_TWECOIN)
+		sha256(pool->coinbase, pool->swork.cb_len, merkle_root);
+	else
+		gen_hash(pool->coinbase, merkle_root, pool->swork.cb_len);
 	gen_hash(pool->coinbase, merkle_root, pool->swork.cb_len);
 	memcpy(merkle_sha, merkle_root, 32);
 	for (i = 0; i < pool->swork.merkles; i++) {
@@ -6101,6 +6135,12 @@ static void rebuild_nonce(struct work *work, uint32_t nonce)
 		case KL_GROESTLCOIN:
 			groestlcoin_regenhash(work);
             break;
+        case KL_SIFCOIN:
+			sifcoin_regenhash(work);
+			break;
+		case KL_TWECOIN:
+			twecoin_regenhash(work);
+			break;
         case KL_ADVSHA3:
 			advsha3_regenhash(work);
 			break;

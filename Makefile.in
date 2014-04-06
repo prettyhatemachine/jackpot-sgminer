@@ -80,6 +80,7 @@ am_sgminer_OBJECTS = sgminer-sgminer.$(OBJEXT) sgminer-api.$(OBJEXT) \
 	sgminer-myriadcoin-groestl.$(OBJEXT) \
 	sgminer-fuguecoin.$(OBJEXT) sgminer-inkcoin.$(OBJEXT) \
 	sgminer-animecoin.$(OBJEXT) sgminer-groestlcoin.$(OBJEXT) \
+	sgminer-sifcoin.$(OBJEXT) sgminer-twecoin.$(OBJEXT) \
 	sgminer-advsha3.$(OBJEXT)
 sgminer_OBJECTS = $(am_sgminer_OBJECTS)
 am__DEPENDENCIES_1 =
@@ -484,7 +485,8 @@ sgminer_SOURCES := sgminer.c api.c elist.h miner.h compat.h \
 	quarkcoin.c quarkcoin.h myriadcoin-groestl.c \
 	myriadcoin-groestl.h fuguecoin.c fuguecoin.h inkcoin.c \
 	inkcoin.h animecoin.c animecoin.h groestlcoin.c groestlcoin.h \
-	advsha3.c advsha3.h kernel/*.cl
+	sifcoin.c sifcoin.h twecoin.c twecoin.h advsha3.c advsha3.h \
+	kernel/*.cl
 bin_SCRIPTS = $(top_srcdir)/kernel/*.cl
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
@@ -647,6 +649,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgminer-scrypt.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgminer-sgminer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgminer-sha2.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgminer-sifcoin.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgminer-twecoin.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgminer-util.Po@am__quote@
 
 .c.o:
@@ -963,6 +967,38 @@ sgminer-groestlcoin.obj: groestlcoin.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='groestlcoin.c' object='sgminer-groestlcoin.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sgminer_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sgminer-groestlcoin.obj `if test -f 'groestlcoin.c'; then $(CYGPATH_W) 'groestlcoin.c'; else $(CYGPATH_W) '$(srcdir)/groestlcoin.c'; fi`
+
+sgminer-sifcoin.o: sifcoin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sgminer_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT sgminer-sifcoin.o -MD -MP -MF $(DEPDIR)/sgminer-sifcoin.Tpo -c -o sgminer-sifcoin.o `test -f 'sifcoin.c' || echo '$(srcdir)/'`sifcoin.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sgminer-sifcoin.Tpo $(DEPDIR)/sgminer-sifcoin.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='sifcoin.c' object='sgminer-sifcoin.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sgminer_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sgminer-sifcoin.o `test -f 'sifcoin.c' || echo '$(srcdir)/'`sifcoin.c
+
+sgminer-sifcoin.obj: sifcoin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sgminer_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT sgminer-sifcoin.obj -MD -MP -MF $(DEPDIR)/sgminer-sifcoin.Tpo -c -o sgminer-sifcoin.obj `if test -f 'sifcoin.c'; then $(CYGPATH_W) 'sifcoin.c'; else $(CYGPATH_W) '$(srcdir)/sifcoin.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sgminer-sifcoin.Tpo $(DEPDIR)/sgminer-sifcoin.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='sifcoin.c' object='sgminer-sifcoin.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sgminer_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sgminer-sifcoin.obj `if test -f 'sifcoin.c'; then $(CYGPATH_W) 'sifcoin.c'; else $(CYGPATH_W) '$(srcdir)/sifcoin.c'; fi`
+
+sgminer-twecoin.o: twecoin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sgminer_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT sgminer-twecoin.o -MD -MP -MF $(DEPDIR)/sgminer-twecoin.Tpo -c -o sgminer-twecoin.o `test -f 'twecoin.c' || echo '$(srcdir)/'`twecoin.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sgminer-twecoin.Tpo $(DEPDIR)/sgminer-twecoin.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='twecoin.c' object='sgminer-twecoin.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sgminer_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sgminer-twecoin.o `test -f 'twecoin.c' || echo '$(srcdir)/'`twecoin.c
+
+sgminer-twecoin.obj: twecoin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sgminer_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT sgminer-twecoin.obj -MD -MP -MF $(DEPDIR)/sgminer-twecoin.Tpo -c -o sgminer-twecoin.obj `if test -f 'twecoin.c'; then $(CYGPATH_W) 'twecoin.c'; else $(CYGPATH_W) '$(srcdir)/twecoin.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sgminer-twecoin.Tpo $(DEPDIR)/sgminer-twecoin.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='twecoin.c' object='sgminer-twecoin.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sgminer_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sgminer-twecoin.obj `if test -f 'twecoin.c'; then $(CYGPATH_W) 'twecoin.c'; else $(CYGPATH_W) '$(srcdir)/twecoin.c'; fi`
 
 sgminer-advsha3.o: advsha3.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sgminer_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT sgminer-advsha3.o -MD -MP -MF $(DEPDIR)/sgminer-advsha3.Tpo -c -o sgminer-advsha3.o `test -f 'advsha3.c' || echo '$(srcdir)/'`advsha3.c
