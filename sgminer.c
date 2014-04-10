@@ -4302,8 +4302,11 @@ void write_config(FILE *fcfg)
                     break;
                 case KL_ADVSHA3:
 					fprintf(fcfg, ADVSHA3_KERNNAME);
+                    break;
+                case KL_GIVECOIN:
+					fprintf(fcfg, GIVECOIN_KERNNAME);
 					break;
-			}
+ 			}
 		}
 
 		fputs("\",\n\"lookup-gap\" : \"", fcfg);
@@ -6112,6 +6115,7 @@ static void rebuild_nonce(struct work *work, uint32_t nonce)
 
 	switch (gpus[0].kernel) {
 		case KL_DARKCOIN:
+        case KL_GIVECOIN:
 			darkcoin_regenhash(work);
 			break;
 		case KL_QUBITCOIN:

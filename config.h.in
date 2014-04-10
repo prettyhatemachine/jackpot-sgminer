@@ -50,6 +50,9 @@
 /* Filename for FugueCoin optimised kernel */
 #undef FUGUECOIN_KERNNAME
 
+/* Filename for GiveCoin optimised kernel */
+#undef GIVECOIN_KERNNAME
+
 /* Define to 1 when the gnulib module memchr should be tested. */
 #undef GNULIB_TEST_MEMCHR
 

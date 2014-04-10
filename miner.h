@@ -382,6 +382,7 @@ enum cl_kernels {
 	KL_PSW,
 	KL_ZUIKKIS,
     KL_ADVSHA3,
+    KL_GIVECOIN,
 	KL_QUARKCOIN,	// kernels starting from this will have difficulty calculated by using quarkcoin algorithm
 	KL_QUBITCOIN,
 	KL_INKCOIN,

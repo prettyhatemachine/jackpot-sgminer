@@ -499,7 +499,12 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize)
 			strcpy(filename, ADVSHA3_KERNNAME".cl");
 			strcpy(binaryfilename, ADVSHA3_KERNNAME);
 			break;
-		case KL_NONE: /* Shouldn't happen */
+        case KL_GIVECOIN:
+			applog(LOG_WARNING, "Kernel GIVECOIN is experimental.");
+			strcpy(filename, GIVECOIN_KERNNAME".cl");
+			strcpy(binaryfilename, GIVECOIN_KERNNAME);
+			break;
+        case KL_NONE: /* Shouldn't happen */
 			break;
 	}
 

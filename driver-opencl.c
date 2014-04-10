@@ -228,6 +228,8 @@ static enum cl_kernels select_kernel(char *arg) {
 		return KL_TWECOIN;
 	if (!strcmp(arg, ADVSHA3_KERNNAME))
 		return KL_ADVSHA3;
+	if (!strcmp(arg, GIVECOIN_KERNNAME))
+		return KL_GIVECOIN;
 	return KL_NONE;
 }
 
@@ -1416,6 +1418,9 @@ static bool opencl_thread_prepare(struct thr_info *thr)
             case KL_ADVSHA3:
                 cgpu->kname = ADVSHA3_KERNNAME;
                 break;
+            case KL_GIVECOIN:
+				cgpu->kname = GIVECOIN_KERNNAME;
+                break;
 			default:
 				break;
 		}
@@ -1460,6 +1465,7 @@ static bool opencl_thread_init(struct thr_info *thr)
 	case KL_ANIMECOIN:
 	case KL_GROESTLCOIN:
     case KL_ADVSHA3:
+    case KL_GIVECOIN:
 		thrdata->queue_kernel_parameters = &queue_sph_kernel;
 		break;
 	default:
