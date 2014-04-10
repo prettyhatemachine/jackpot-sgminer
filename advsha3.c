@@ -60,11 +60,11 @@ static void advsha3_hash(void *state, const void *input) {
     uint32_t hash[16];
 
     sph_keccak512_init(&ctx_keccak);
-    sph_keccak512 (&ctx_keccak, input, 80);
+    sph_keccak512 (&ctx_keccak, input, 88);
     sph_keccak512_close(&ctx_keccak, (void *)hash);
 
     int round;
-    for (round = 0; round < 8; round++) {
+    for (round = 0; round < 4; round++) {
         switch (hash[0] & 0x3) {
           case 0:
                sph_blake512_init(&ctx_blake);
