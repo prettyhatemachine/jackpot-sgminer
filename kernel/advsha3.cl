@@ -343,7 +343,8 @@ __kernel void search(__global uint * input, volatile __global uint * output, con
 	 for (uint i = 0; i < 22; i++) HASH.U4[i] = input[i];
 	 HASH.U4[19] = SWAP4(gid);
 	 KECCAK512_80(HASH.U8);
-	 for (uint i = 0; i < 4; i++) {
+     uint round_max = HASH.U4[0x00] & 0x00000007U;
+	 for (uint i = 0; i < round_max; i++) {
          switch (HASH.U4[0x00] & 0x03) {
 	       case 0x00:
 		        BLAKE512(HASH.U8);

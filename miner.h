@@ -672,7 +672,15 @@ static inline void flip80(void *dest_p, const void *src_p)
 	for (i = 0; i < 20; i++)
 		dest[i] = swab32(src[i]);
 }
+static inline void flip88(void *dest_p, const void *src_p)
+{
+	uint32_t *dest = dest_p;
+	const uint32_t *src = src_p;
+	int i;
 
+	for (i = 0; i < 22; i++)
+		dest[i] = swab32(src[i]);
+}
 static inline void flip128(void *dest_p, const void *src_p)
 {
 	uint32_t *dest = dest_p;
@@ -1121,7 +1129,8 @@ extern char current_hash[68];
 extern double current_diff;
 extern double best_diff;
 extern struct timeval block_timeval;
-extern char *workpadding;
+extern char *workpadding1;
+extern char *workpadding2;
 
 typedef struct {
 	cl_uint ctx_a; cl_uint ctx_b; cl_uint ctx_c; cl_uint ctx_d;
@@ -1295,6 +1304,8 @@ struct pool {
 	uint32_t gbt_version;
 	uint32_t curtime;
 	uint32_t gbt_bits;
+    uint32_t gbt_reserved_00;
+    uint32_t gbt_reserved_01;
 	unsigned char *txn_hashes;
 	int gbt_txns;
 	int coinbase_len;
@@ -1338,7 +1349,7 @@ struct work {
 	bool		mined;
 	bool		clone;
 	bool		cloned;
-	int		rolltime;
+	int         rolltime;
 	bool		longpoll;
 	bool		stale;
 	bool		mandatory;
@@ -1354,10 +1365,10 @@ struct work {
 
 	bool		gbt;
 	char		*coinbase;
-	int		gbt_txns;
+	int	        gbt_txns;
 
 	unsigned int	work_block;
-	int		id;
+	int	        id;
 	UT_hash_handle	hh;
 
 	double		work_difficulty;
@@ -1368,7 +1379,6 @@ struct work {
 	bool		devflag;
 	// Allow devices to timestamp work for their own purposes
 	struct timeval	tv_stamp;
-
 	struct timeval	tv_getwork;
 	struct timeval	tv_getwork_reply;
 	struct timeval	tv_cloned;

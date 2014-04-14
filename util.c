@@ -1596,7 +1596,7 @@ static bool parse_notify(struct pool *pool, json_t *val)
 		pool->swork.ntime,
 		pool->swork.nbit,
 		"00000000", /* nonce */
-		workpadding);
+		workpadding1);
 	if (unlikely(!hex2bin(pool->header_bin, header, 128)))
 		quit(1, "Failed to convert header to header_bin in parse_notify");
 

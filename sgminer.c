@@ -1640,7 +1640,8 @@ void free_work(struct work *work)
 
 static void gen_hash(unsigned char *data, unsigned char *hash, int len);
 static void calc_diff(struct work *work, double known);
-char *workpadding = "000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
+char *workpadding1 = "0000000000000000000000800000000000000000000000000000000000000000000000000000000000000000c0020000";
+char *workpadding2 = "000000800000000000000000000000000000000000000000000000000000000000000000c0020000";
 
 #ifdef HAVE_LIBCURL
 /* Process transactions with GBT by storing the binary value of the first
@@ -1714,7 +1715,6 @@ static unsigned char *__gbt_merkleroot(struct pool *pool)
 		}
 		for (i = 0; i < txns; i += 2){
 			unsigned char hashout[32];
-
 			gen_hash(merkle_hash + (i * 32), hashout, 64);
 			memcpy(merkle_hash + (i / 2 * 32), hashout, 32);
 		}
@@ -1782,6 +1782,11 @@ static void gen_gbt_work(struct pool *pool, struct work *work)
 	memcpy(work->data + 4 + 32 + 32, &pool->curtime, 4);
 	memcpy(work->data + 4 + 32 + 32 + 4, &pool->gbt_bits, 4);
 
+    if (gpus[0].kernel == KL_ADVSHA3) {
+       memcpy(work->data + 4 + 32 + 32 + 4 + 4 + 4,     &pool->gbt_reserved_00, 4);
+       memcpy(work->data + 4 + 32 + 32 + 4 + 4 + 4 + 4, &pool->gbt_reserved_01, 4);
+    }
+
 	memcpy(work->target, pool->gbt_target, 32);
 
 	work->coinbase = bin2hex(pool->coinbase, pool->coinbase_len);
@@ -1797,11 +1802,15 @@ static void gen_gbt_work(struct pool *pool, struct work *work)
 	free(merkleroot);
 	memset(work->data + 4 + 32 + 32 + 4 + 4, 0, 4); /* nonce */
 
-	hex2bin(work->data + 4 + 32 + 32 + 4 + 4 + 4, workpadding, 48);
+    if (gpus[0].kernel == KL_ADVSHA3) {
+	   hex2bin(work->data + 4 + 32 + 32 + 4 + 4 + 4 + 4 + 4, workpadding2, 40);
+    }
+    else {
+ 	   hex2bin(work->data + 4 + 32 + 32 + 4 + 4 + 4, workpadding1, 48);
+    }
 
 	if (opt_debug) {
 		char *header = bin2hex(work->data, 128);
-
 		applog(LOG_DEBUG, "Generated GBT header %s", header);
 		applog(LOG_DEBUG, "Work coinbase %s", work->coinbase);
 		free(header);
@@ -1831,6 +1840,8 @@ static bool gbt_decode(struct pool *pool, json_t *res_val)
 	int expires;
 	int version;
 	int curtime;
+    int superblock;
+    int reserved;
 	bool submitold;
 	const char *bits;
 	const char *workid;
@@ -1848,7 +1859,10 @@ static bool gbt_decode(struct pool *pool, json_t *res_val)
 	submitold = json_is_true(json_object_get(res_val, "submitold"));
 	bits = json_string_value(json_object_get(res_val, "bits"));
 	workid = json_string_value(json_object_get(res_val, "workid"));
-
+    if (gpus[0].kernel == KL_ADVSHA3) {
+   	   superblock = json_integer_value(json_object_get(res_val, "superblock"));
+	   reserved = json_integer_value(json_object_get(res_val, "reserved"));
+    }
 	if (!previousblockhash || !target || !coinbasetxn || !longpollid ||
 	    !expires || !version || !curtime || !bits) {
 		applog(LOG_ERR, "JSON failed to decode GBT");
@@ -1862,6 +1876,8 @@ static bool gbt_decode(struct pool *pool, json_t *res_val)
 	applog(LOG_DEBUG, "expires: %d", expires);
 	applog(LOG_DEBUG, "version: %d", version);
 	applog(LOG_DEBUG, "curtime: %d", curtime);
+	applog(LOG_DEBUG, "superblock: %d", superblock);
+	applog(LOG_DEBUG, "reserved: %d", reserved);
 	applog(LOG_DEBUG, "submitold: %s", submitold ? "true" : "false");
 	applog(LOG_DEBUG, "bits: %s", bits);
 	if (workid)
@@ -1905,6 +1921,8 @@ static bool gbt_decode(struct pool *pool, json_t *res_val)
 
 	pool->gbt_expires = expires;
 	pool->gbt_version = htobe32(version);
+    pool->gbt_reserved_00 = htobe32(superblock);
+    pool->gbt_reserved_01 = htobe32(reserved);
 	pool->curtime = htobe32(curtime);
 	pool->submit_old = submitold;
 
@@ -1924,7 +1942,6 @@ static bool getwork_decode(json_t *res_val, struct work *work)
 	}
 
 	if (!jobj_binary(res_val, "midstate", work->midstate, sizeof(work->midstate), false)) {
-		// Calculate it ourselves
 		applog(LOG_DEBUG, "Calculating midstate locally");
 		calc_midstate(work);
 	}
@@ -2628,10 +2645,10 @@ static bool submit_upstream_work(struct work *work, CURL *curl, bool resubmit)
 	/* build JSON-RPC request */
 	if (work->gbt) {
 		char *gbt_block, *varint;
-		unsigned char data[80];
+		unsigned char data[88];
 
-		flip80(data, work->data);
-		gbt_block = bin2hex(data, 80);
+		flip88(data, work->data);
+		gbt_block = bin2hex(data, 88);
 
 		if (work->gbt_txns < 0xfd) {
 			uint8_t val = work->gbt_txns;
@@ -6154,7 +6171,7 @@ static void rebuild_nonce(struct work *work, uint32_t nonce)
 	}
 
     if (opt_debug) {
-		char *htarget = bin2hex(work->data, 80);
+		char *htarget = bin2hex(work->data, 88);
 		applog(LOG_DEBUG, "REGEN DATA : %s", htarget);
 		htarget = bin2hex(work->hash, 32);
 		applog(LOG_DEBUG, "REGEN HASH : %s", htarget);

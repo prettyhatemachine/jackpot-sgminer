@@ -1089,6 +1089,10 @@ static cl_int queue_sph_kernel(_clState *clState, dev_blk_ctx *blk, __maybe_unus
     printf("\n SPH Kernel : ");
     for (i = 0; i < 32; i++) printf(" %02x", (unsigned char)(ptr[i]));
     printf("\n");
+    ptr = (unsigned char *)(blk->work->data);
+    printf("\n SPH Kernel Data : ");
+    for (i = 0; i < 88; i++) printf(" %02x", (unsigned char)(ptr[i]));
+    printf("\n");
     */
 
 	CL_SET_ARG(clState->CLbuffer0);
@@ -1583,11 +1587,11 @@ static int64_t opencl_scanhash(struct thr_info *thr, struct work *work,
 	if ((thrdata->res[found])) {
 
       /*
-        int j, i;
+      int j, i;
         char * data = (char *)thrdata->res;
         printf("\n");
         printf("INPUT\n");
-        for (j = 0; j < 80; j++) {
+        for (j = 0; j < 88; j++) {
             printf(" %02x", (unsigned char)data[256 + j]);
         }
 
@@ -1596,8 +1600,7 @@ static int64_t opencl_scanhash(struct thr_info *thr, struct work *work,
         for (j = 0; j < 64; j++) {
             printf(" %02x", (unsigned char)data[256 + 128 + j]);
         }
-
-       */
+      */
 
 		/* Clear the buffer again */
 		status = clEnqueueWriteBuffer(clState->commandQueue, clState->outputBuffer, CL_FALSE, 0,
