@@ -7,37 +7,11 @@
 #ifndef ADVSHA3_CL
 #define ADVSHA3_CL
 
-#define SPH_LITTLE_ENDIAN 1
-
-#define SPH_UPTRs                         sph_u64
-
-typedef uint                              sph_u32;
-typedef int                               sph_s32;
-
-typedef ulong                             sph_u64;
-typedef long                              sph_s64;
-
-
-#define SPH_64                            1
-#define SPH_64_TRUE                       1
-
-#define SPH_C32(x)                        ((sph_u32)(x ## U))
-#define SPH_T32(x)                        ((x) & SPH_C32(0xFFFFFFFF))
-#define SPH_ROTL32(x, n)                  rotate(x, n)
-
-#define SPH_ROTR32(x, n)                  SPH_ROTL32(x, (32 - (n)))
-
-#define SPH_C64(x)                        ((sph_u64)(x ## UL))
-#define SPH_T64(x)                        ((x) & SPH_C64(0xFFFFFFFFFFFFFFFF))
 #define SPH_ROTL64(x, n)                  rotate(x, (ulong)(n))
-
 #define SPH_ROTR64(x, n)                  SPH_ROTL64(x, (64 - (n)))
 
 #define SWAP4(x)                          as_uint(as_uchar4(x).wzyx)
 #define SWAP8(x)                          as_ulong(as_uchar8(x).s76543210)
-
-#define DEC64E(x)                         SWAP8(x)
-#define DEC64BE(x)                        SWAP8(*(const __global sph_u64 *) (x));
 
 #include "__blake.cl"
 #include "__groestl.cl"
@@ -46,11 +20,11 @@ typedef long                              sph_s64;
 #include "__skein.cl"
 
 
-void BLAKE512(ulong X[16])	{
-     ulong H0 = BLAKE_IV512[0], H1 = BLAKE_IV512[1];
-     ulong H2 = BLAKE_IV512[2], H3 = BLAKE_IV512[3];
-     ulong H4 = BLAKE_IV512[4], H5 = BLAKE_IV512[5];
-     ulong H6 = BLAKE_IV512[6], H7 = BLAKE_IV512[7];
+void BLAKE512(ulong X[])	{
+     ulong H0 = BLAKE_INI[0], H1 = BLAKE_INI[1];
+     ulong H2 = BLAKE_INI[2], H3 = BLAKE_INI[3];
+     ulong H4 = BLAKE_INI[4], H5 = BLAKE_INI[5];
+     ulong H6 = BLAKE_INI[6], H7 = BLAKE_INI[7];
      ulong M0, M1, M2, M3, M4, M5, M6, M7;
      ulong M8, M9, MA, MB, MC, MD, ME, MF;
      ulong V0, V1, V2, V3, V4, V5, V6, V7;
@@ -114,20 +88,18 @@ void BLAKE512(ulong X[16])	{
 }
 
 
-void GROESTL512(ulong X[16], __local const ulong LT0[256],
-                             __local const ulong LT1[256],
-                             __local const ulong LT2[256],
-                             __local const ulong LT3[256],
-                             __local const ulong LT4[256],
-                             __local const ulong LT5[256],
-                             __local const ulong LT6[256],
-                             __local const ulong LT7[256]) {
+void GROESTL512(ulong X[], __local const ulong LT0[256],
+                           __local const ulong LT1[256],
+                           __local const ulong LT2[256],
+                           __local const ulong LT3[256],
+                           __local const ulong LT4[256],
+                           __local const ulong LT5[256],
+                           __local const ulong LT6[256],
+                           __local const ulong LT7[256]) {
 
      ulong g[16], m[16], x[16], t[16];
 	 ulong H[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x2000000000000UL };
-     #pragma unroll
      for (uint u = 0; u < 8; u++) m[u] = X[u];
-     #pragma unroll
      for (uint u = 0; u < 8; u++) g[u] = m[u];
      m[0x08] = 0x80;              g[0x08] = 0x80;
      m[0x09] = 0;                 g[0x09] = 0;
@@ -138,32 +110,30 @@ void GROESTL512(ulong X[16], __local const ulong LT0[256],
      m[0x0E] = 0;                 g[0x0E] = 0;
      m[0x0F] = 0x100000000000000; g[0x0F] = m[0x0F] ^ H[0x0F];
      for (uint r = 0; r < 14; r++) {
-           ROUND_BIG_P(g, r);
+         ROUND_BIG_P(g, r);
      }
      for (uint r = 0; r < 14; r++) {
-           ROUND_BIG_Q(m, r);
+          ROUND_BIG_Q(m, r);
      }
      for (uint u = 0; u < 16; u++) x[u]  = (H[u] ^= (g[u] ^ m[u]));
      for (uint r = 0; r < 14; r++) {
-     ROUND_BIG_P(x, r);
+         ROUND_BIG_P(x, r);
      }
-     #pragma unroll
      for (uint u = 8; u < 16; u++) H[u] ^= x[u];
-     #pragma unroll
 	 for (uint u = 0; u <  8; u++) X[u]  = H[u + 0x08];
 }
 
 
-void JH512(ulong X[16]) {
-     ulong h0h = JH_IV512[0x00], h0l = JH_IV512[0x01];
-	 ulong h1h = JH_IV512[0x02], h1l = JH_IV512[0x03];
-     ulong h2h = JH_IV512[0x04], h2l = JH_IV512[0x05];
-     ulong h3h = JH_IV512[0x06], h3l = JH_IV512[0x07];
-     ulong h4h = JH_IV512[0x08], h4l = JH_IV512[0x09];
-	 ulong h5h = JH_IV512[0x0A], h5l = JH_IV512[0x0B];
-	 ulong h6h = JH_IV512[0x0C], h6l = JH_IV512[0x0D];
-     ulong h7h = JH_IV512[0x0E], h7l = JH_IV512[0x0F];
-     ulong tmp;
+void JH512(ulong X[]) {
+     ulong h0h = JH_INI[0x00], h0l = JH_INI[0x01];
+	 ulong h1h = JH_INI[0x02], h1l = JH_INI[0x03];
+     ulong h2h = JH_INI[0x04], h2l = JH_INI[0x05];
+     ulong h3h = JH_INI[0x06], h3l = JH_INI[0x07];
+     ulong h4h = JH_INI[0x08], h4l = JH_INI[0x09];
+	 ulong h5h = JH_INI[0x0A], h5l = JH_INI[0x0B];
+	 ulong h6h = JH_INI[0x0C], h6l = JH_INI[0x0D];
+     ulong h7h = JH_INI[0x0E], h7l = JH_INI[0x0F];
+     ulong tmp, t;
      for(uint i = 0; i < 2; i++) {
         if (i == 0) {
             h0h ^= X[0x00];
@@ -242,7 +212,7 @@ void JH512(ulong X[16]) {
 }
 
 
-void KECCAK512_80(ulong X[16]) {
+void KECCAK512_80(ulong X[]) {
      ulong c0x, c1x, c2x, c3x, c4x;
      ulong a00 =  X[0];
      ulong a10 = ~X[1];
@@ -288,11 +258,11 @@ void KECCAK512_80(ulong X[16]) {
 }
 
 
-void SKEIN512(ulong X[16]) {
-     ulong h0 = SKEIN_IV512[0x00], h1 = SKEIN_IV512[0x01];
-     ulong h2 = SKEIN_IV512[0x02], h3 = SKEIN_IV512[0x03];
-     ulong h4 = SKEIN_IV512[0x04], h5 = SKEIN_IV512[0x05];
-     ulong h6 = SKEIN_IV512[0x06], h7 = SKEIN_IV512[0x07];
+void SKEIN512(ulong X[]) {
+     ulong h0 = SKEIN_INI[0x00], h1 = SKEIN_INI[0x01];
+     ulong h2 = SKEIN_INI[0x02], h3 = SKEIN_INI[0x03];
+     ulong h4 = SKEIN_INI[0x04], h5 = SKEIN_INI[0x05];
+     ulong h6 = SKEIN_INI[0x06], h7 = SKEIN_INI[0x07];
      ulong m0 = X[0x00];
      ulong m1 = X[0x01];
      ulong m2 = X[0x02];
@@ -316,9 +286,11 @@ void SKEIN512(ulong X[16]) {
      X[0x07] = h7;
 }
 
+#define WORKSIZE 256
 
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search(__global uint * input, volatile __global uint * output, const ulong target) {
+
    __local ulong LT0[256], LT1[256], LT2[256], LT3[256], LT4[256], LT5[256], LT6[256], LT7[256];
      uint init = get_local_id(0);
      uint step = get_local_size(0);
@@ -336,30 +308,27 @@ __kernel void search(__global uint * input, volatile __global uint * output, con
 
      uint  gid = get_global_id(0);
      union {
-        uint  U4[32];
-        ulong U8[16];
+        uint  U4[22];
+        ulong U8[11];
      } HASH;
 
-	 for (uint i = 0; i < 22; i++) HASH.U4[i] = input[i];
+	 for (uint i = 0; i < 22; i++) {
+         HASH.U4[i] = input[i];
+     }
 	 HASH.U4[19] = SWAP4(gid);
+
 	 KECCAK512_80(HASH.U8);
-     uint round_max = HASH.U4[0x00] & 0x00000007U;
-	 for (uint i = 0; i < round_max; i++) {
-         switch (HASH.U4[0x00] & 0x03) {
-	       case 0x00:
-		        BLAKE512(HASH.U8);
-			    break;
-		   case 0x01:
-                GROESTL512(HASH.U8, LT0, LT1, LT2, LT3, LT4, LT5, LT6, LT7);
-		        break;
-		   case 0x02:
-                JH512(HASH.U8);
-		        break;
-		   case 0x03:
-                SKEIN512(HASH.U8);
-		        break;
-		}
-	}
+
+   uint rounds = HASH.U4[0x00] & 0x00000007U;
+	 for (uint i = 0; i < 8; i++) {
+		   if (i < rounds) {
+          uint method = HASH.U4[0x00] & 0x00000003U;
+          if      (method == 0) { BLAKE512(HASH.U8);                                           }
+          else if (method == 1) { GROESTL512(HASH.U8, LT0, LT1, LT2, LT3, LT4, LT5, LT6, LT7); }
+          else if (method == 2) { JH512(HASH.U8);                                              }
+          else if (method == 3) { SKEIN512(HASH.U8);                                           }
+				}
+	  }
 
     if (HASH.U8[3] <= target) {
        output[output[0xFF]++] = gid;

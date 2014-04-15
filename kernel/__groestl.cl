@@ -1,12 +1,13 @@
 
-#define C64e(x)     ((SPH_C64(x) >> 56) \
-                    | ((SPH_C64(x) >> 40) & SPH_C64(0x000000000000FF00)) \
-                    | ((SPH_C64(x) >> 24) & SPH_C64(0x0000000000FF0000)) \
-                    | ((SPH_C64(x) >>  8) & SPH_C64(0x00000000FF000000)) \
-                    | ((SPH_C64(x) <<  8) & SPH_C64(0x000000FF00000000)) \
-                    | ((SPH_C64(x) << 24) & SPH_C64(0x0000FF0000000000)) \
-                    | ((SPH_C64(x) << 40) & SPH_C64(0x00FF000000000000)) \
-                    | ((SPH_C64(x) << 56) & SPH_C64(0xFF00000000000000)))
+#define C64e(x)     (  ((ulong)x >> 56) \
+                    | (((ulong)x >> 40) & 0x000000000000FF00UL) \
+                    | (((ulong)x >> 24) & 0x0000000000FF0000UL) \
+                    | (((ulong)x >>  8) & 0x00000000FF000000UL) \
+                    | (((ulong)x <<  8) & 0x000000FF00000000UL) \
+                    | (((ulong)x << 24) & 0x0000FF0000000000UL) \
+                    | (((ulong)x << 40) & 0x00FF000000000000UL) \
+                    | (((ulong)x << 56) & 0xFF00000000000000UL))
+
 #define B64_0(x)    as_uchar8(x).s0
 #define B64_1(x)    as_uchar8(x).s1
 #define B64_2(x)    as_uchar8(x).s2
@@ -16,7 +17,7 @@
 #define B64_6(x)    as_uchar8(x).s6
 #define B64_7(x)    as_uchar8(x).s7
 #define PC64(j, r)  ((ulong)((j) + (r)))
-#define QC64(j, r)  (((ulong)(r) << 56) ^ SPH_T64(~((ulong)(j) << 56)))
+#define QC64(j, r)  (((ulong)(r) << 56) ^ (~((ulong)(j) << 56)))
 
 
 __constant ulong T0[] = {
@@ -191,7 +192,8 @@ __constant ulong T4[] = {
 	C64e(0xc15ab62d2decc1b6), C64e(0x6678223c3c5a6622),	C64e(0xad2a921515b8ad92), C64e(0x608920c9c9a96020),	C64e(0xdb154987875cdb49), C64e(0x1a4fffaaaab01aff),	C64e(0x88a0785050d88878), C64e(0x8e517aa5a52b8e7a),
 	C64e(0x8a068f0303898a8f), C64e(0x13b2f859594a13f8),	C64e(0x9b12800909929b80), C64e(0x3934171a1a233917),	C64e(0x75cada65651075da), C64e(0x53b531d7d7845331),	C64e(0x5113c68484d551c6), C64e(0xd3bbb8d0d003d3b8),
 	C64e(0x5e1fc38282dc5ec3), C64e(0xcb52b02929e2cbb0),	C64e(0x99b4775a5ac39977), C64e(0x333c111e1e2d3311),	C64e(0x46f6cb7b7b3d46cb), C64e(0x1f4bfca8a8b71ffc),	C64e(0x61dad66d6d0c61d6), C64e(0x4e583a2c2c624e3a)
-};
+};
+
 
 __constant ulong T5[] = {
 	C64e(0xa5f497a5c6c632f4), C64e(0x8497eb84f8f86f97),	C64e(0x99b0c799eeee5eb0), C64e(0x8d8cf78df6f67a8c),	C64e(0x0d17e50dffffe817), C64e(0xbddcb7bdd6d60adc),	C64e(0xb1c8a7b1dede16c8), C64e(0x54fc395491916dfc),
@@ -300,7 +302,7 @@ __constant ulong T7[] = {
 
 
 #define RBTT(d, a, b0, b1, b2, b3, b4, b5, b6, b7)   \
-		t[d] = LT0[B64_0(a[b0])] ^ LT1[B64_1(a[b1])] ^ LT2[B64_2(a[b2])] ^ LT3[B64_3(a[b3])] ^ LT4[B64_4(a[b4])] ^ LT5[B64_5(a[b5])] ^ LT6[B64_6(a[b6])] ^ LT7[B64_7(a[b7])]; 
+		t[d] = LT0[B64_0(a[b0])] ^ LT1[B64_1(a[b1])] ^ LT2[B64_2(a[b2])] ^ LT3[B64_3(a[b3])] ^ LT4[B64_4(a[b4])] ^ LT5[B64_5(a[b5])] ^ LT6[B64_6(a[b6])] ^ LT7[B64_7(a[b7])];
 
 #define ROUND_BIG_P(a, r)    \
 		a[0x0] ^= PC64(0x00, r); \

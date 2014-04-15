@@ -637,9 +637,9 @@ build:
 	/* create a cl program executable for all the devices specified */
 	char *CompilerOptions = calloc(1, 256);
 
-	sprintf(CompilerOptions, "-I \"%s\" -I \"%s\" -I \"%skernel\" -I \".\" -D LOOKUP_GAP=%d -D CONCURRENT_THREADS=%d -D WORKSIZE=%d",
+	sprintf(CompilerOptions, "-I \"%s\" -I \"%s\" -I \"%skernel\" -I \".\" -D LOOKUP_GAP=%d -D CONCURRENT_THREADS=%d -D WORKSIZE=%d -O%d",
 			opt_kernel_path, sgminer_path, sgminer_path,
-			cgpu->lookup_gap, (unsigned int)cgpu->thread_concurrency, (int)clState->wsize);
+			cgpu->lookup_gap, (unsigned int)cgpu->thread_concurrency, (int)clState->wsize, opt_clopt);
 
 	applog(LOG_DEBUG, "Setting worksize to %d", (int)(clState->wsize));
 	if (clState->vwidth > 1)
@@ -666,7 +666,9 @@ build:
 	} else
 		applog(LOG_DEBUG, "cl_amd_media_ops not found, will not set BITALIGN");
 
-	if (patchbfi) {
+    strcat(CompilerOptions, " ");
+
+ 	if (patchbfi) {
 		strcat(CompilerOptions, " -D BFI_INT");
 		applog(LOG_DEBUG, "BFI_INT patch requiring device found, patched source with BFI_INT");
 	} else

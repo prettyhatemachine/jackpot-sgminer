@@ -21,6 +21,7 @@ enum {
 extern bool opt_debug;
 extern bool opt_log_output;
 extern bool opt_realquiet;
+extern bool use_curses;
 extern bool want_per_device_stats;
 
 /* global log_level, messages with lower or equal prio are logged */

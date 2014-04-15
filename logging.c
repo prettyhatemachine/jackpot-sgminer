@@ -42,7 +42,7 @@ static void my_log_curses(int prio, const char *datetime, const char *str, bool 
 #endif
 	{
 		mutex_lock(&console_lock);
-		printf("%s%s%s", datetime, str, "                    \n");
+		printf("%s%s%s", datetime, str, "                        \n");
 		mutex_unlock(&console_lock);
 	}
 }
@@ -81,7 +81,7 @@ void _applog(int prio, const char *str, bool force)
 				tm->tm_mon + 1,
 				tm->tm_mday);
 			_applog(prio, date_output_str, force);
-			
+
 		}
 
 		if (opt_log_show_date)
@@ -104,10 +104,12 @@ void _applog(int prio, const char *str, bool force)
 
 		/* Only output to stderr if it's not going to the screen as well */
 		if (!isatty(fileno((FILE *)stderr))) {
+           if (use_curses) {
 			fprintf(stderr, "%s%s\n", datetime, str);	/* atomic write to stderr */
 			fflush(stderr);
+           }
 		}
 
-		my_log_curses(prio, datetime, str, force);
+	    my_log_curses(prio, datetime, str, force);
 	}
 }

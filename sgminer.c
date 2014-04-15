@@ -162,6 +162,7 @@ double opt_diff_mult = 1.0;
 
 char *opt_kernel_path;
 char *sgminer_path;
+int  opt_clopt = 5;
 
 #define QUIET	(opt_quiet || opt_realquiet)
 
@@ -1165,6 +1166,9 @@ static struct opt_table opt_config_table[] = {
 		     set_int_1_to_10, opt_show_intval, &opt_g_threads,
 		     "Number of threads per GPU (1 - 10)"),
 #else
+	OPT_WITH_ARG("--gpu-opt",
+		     set_int_0_to_9999, opt_show_intval, &opt_clopt,
+		     "Select OpenCL compiler optimization level (0~5, default: 5)"),
 	OPT_WITH_ARG("--gpu-threads|-g",
 		     set_gpu_threads, NULL, NULL,
 		     "Number of threads per GPU - one value or comma separated list (e.g. 1,2,1)"),

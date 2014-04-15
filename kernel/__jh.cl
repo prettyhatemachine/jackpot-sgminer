@@ -1,28 +1,27 @@
 
-#define C64e(x)     ((SPH_C64(x) >> 56) \
-                    | ((SPH_C64(x) >> 40) & SPH_C64(0x000000000000FF00)) \
-                    | ((SPH_C64(x) >> 24) & SPH_C64(0x0000000000FF0000)) \
-                    | ((SPH_C64(x) >>  8) & SPH_C64(0x00000000FF000000)) \
-                    | ((SPH_C64(x) <<  8) & SPH_C64(0x000000FF00000000)) \
-                    | ((SPH_C64(x) << 24) & SPH_C64(0x0000FF0000000000)) \
-                    | ((SPH_C64(x) << 40) & SPH_C64(0x00FF000000000000)) \
-                    | ((SPH_C64(x) << 56) & SPH_C64(0xFF00000000000000)))
+#define C64e(x)     (  ((ulong)x >> 56) \
+                    | (((ulong)x >> 40) & 0x000000000000FF00UL) \
+                    | (((ulong)x >> 24) & 0x0000000000FF0000UL) \
+                    | (((ulong)x >>  8) & 0x00000000FF000000UL) \
+                    | (((ulong)x <<  8) & 0x000000FF00000000UL) \
+                    | (((ulong)x << 24) & 0x0000FF0000000000UL) \
+                    | (((ulong)x << 40) & 0x00FF000000000000UL) \
+                    | (((ulong)x << 56) & 0xFF00000000000000UL))
 
-#define Sb(x0, x1, x2, x3, c)   do { \
-		x3 = ~x3; \
-		x0 ^= (c) & ~x2; \
-		tmp = (c) ^ (x0 & x1); \
-		x0 ^= x2 & x3; \
-		x3 ^= ~x1 & x2; \
-		x1 ^= x0 & x2; \
-		x2 ^= x0 & ~x3; \
-		x0 ^= x1 | x3; \
-		x3 ^= x1 & x2; \
-		x1 ^= tmp & x0; \
-		x2 ^= tmp; \
-	} while (0)
+#define Sb(x0, x1, x2, x3, c)        \
+		x3 = ~x3;                    \
+		x0 ^= (c) & ~x2;             \
+		tmp = (c) ^ (x0 & x1);       \
+		x0 ^= x2 & x3;               \
+		x3 ^= ~x1 & x2;              \
+		x1 ^= x0 & x2;               \
+		x2 ^= x0 & ~x3;              \
+		x0 ^= x1 | x3;               \
+		x3 ^= x1 & x2;               \
+		x1 ^= tmp & x0;              \
+		x2 ^= tmp;
 
-#define Lb(x0, x1, x2, x3, x4, x5, x6, x7)   do { \
+#define Lb(x0, x1, x2, x3, x4, x5, x6, x7)  \
 		x4 ^= x1; \
 		x5 ^= x2; \
 		x6 ^= x3 ^ x0; \
@@ -30,10 +29,9 @@
 		x0 ^= x5; \
 		x1 ^= x6; \
 		x2 ^= x7 ^ x4; \
-		x3 ^= x4; \
-	} while (0)
+		x3 ^= x4;
 
-__constant static const sph_u64 C[] = {
+__constant ulong C[] = {
 	C64e(0x72d5dea2df15f867), C64e(0x7b84150ab7231557),
 	C64e(0x81abd6904d5a87f6), C64e(0x4e9f4fc5c3d12b40),
 	C64e(0xea983ae05c45fa9c), C64e(0x03c5d29966b2999a),
@@ -125,36 +123,28 @@ __constant static const sph_u64 C[] = {
 #define Codd_hi(r)    (C[((r) << 2) + 2])
 #define Codd_lo(r)    (C[((r) << 2) + 3])
 
-#define S(x0, x1, x2, x3, cb, r)   do { \
+#define S(x0, x1, x2, x3, cb, r)                             \
 		Sb(x0 ## h, x1 ## h, x2 ## h, x3 ## h, cb ## hi(r)); \
-		Sb(x0 ## l, x1 ## l, x2 ## l, x3 ## l, cb ## lo(r)); \
-	} while (0)
+		Sb(x0 ## l, x1 ## l, x2 ## l, x3 ## l, cb ## lo(r));
 
-#define L(x0, x1, x2, x3, x4, x5, x6, x7)   do { \
+#define L(x0, x1, x2, x3, x4, x5, x6, x7)                                           \
 		Lb(x0 ## h, x1 ## h, x2 ## h, x3 ## h, x4 ## h, x5 ## h, x6 ## h, x7 ## h); \
-		Lb(x0 ## l, x1 ## l, x2 ## l, x3 ## l, x4 ## l, x5 ## l, x6 ## l, x7 ## l); \
-	} while (0)
+		Lb(x0 ## l, x1 ## l, x2 ## l, x3 ## l, x4 ## l, x5 ## l, x6 ## l, x7 ## l);
 
-#define Wz(x, c, n)   do { \
-		sph_u64 t = (x ## h & (c)) << (n); \
-		x ## h = ((x ## h >> (n)) & (c)) | t; \
-		t = (x ## l & (c)) << (n); \
-		x ## l = ((x ## l >> (n)) & (c)) | t; \
-	} while (0)
+#define Wz(x, c, n) \
+		t = (x ## h & (c)) << (n); x ## h = ((x ## h >> (n)) & (c)) | t; \
+		t = (x ## l & (c)) << (n); x ## l = ((x ## l >> (n)) & (c)) | t;
 
-#define W0(x)   Wz(x, SPH_C64(0x5555555555555555),  1)
-#define W1(x)   Wz(x, SPH_C64(0x3333333333333333),  2)
-#define W2(x)   Wz(x, SPH_C64(0x0F0F0F0F0F0F0F0F),  4)
-#define W3(x)   Wz(x, SPH_C64(0x00FF00FF00FF00FF),  8)
-#define W4(x)   Wz(x, SPH_C64(0x0000FFFF0000FFFF), 16)
-#define W5(x)   Wz(x, SPH_C64(0x00000000FFFFFFFF), 32)
-#define W6(x)   do { \
-		sph_u64 t = x ## h; \
-		x ## h = x ## l; \
-		x ## l = t; \
-	} while (0)
+#define W0(x)   Wz(x, 0x5555555555555555UL,  1)
+#define W1(x)   Wz(x, 0x3333333333333333UL,  2)
+#define W2(x)   Wz(x, 0x0F0F0F0F0F0F0F0FUL,  4)
+#define W3(x)   Wz(x, 0x00FF00FF00FF00FFUL,  8)
+#define W4(x)   Wz(x, 0x0000FFFF0000FFFFUL, 16)
+#define W5(x)   Wz(x, 0x00000000FFFFFFFFUL, 32)
+#define W6(x)  	t = x ## h; x ## h = x ## l; x ## l = t;
 
-__constant static const sph_u64 JH_IV512[] = {
+
+__constant ulong JH_INI[] = {
 	C64e(0x6fd14b963e00aa17), C64e(0x636a2e057a15d543),
 	C64e(0x8a225e8d0c97ef0b), C64e(0xe9341259f2b3c361),
 	C64e(0x891da0c1536f801e), C64e(0x2aa9056bea2b6d80),
@@ -167,13 +157,14 @@ __constant static const sph_u64 JH_IV512[] = {
 
 #define SL(ro)   SLu(r + ro, ro)
 
-#define SLu(r, ro)   do { \
-		S(h0, h2, h4, h6, Ceven_, r); \
-		S(h1, h3, h5, h7, Codd_, r); \
+#define SLu(r, ro)   do {                  \
+		S(h0, h2, h4, h6, Ceven_, r);      \
+		S(h1, h3, h5, h7, Codd_, r);       \
 		L(h0, h2, h4, h6, h1, h3, h5, h7); \
-		W ## ro(h1); \
-		W ## ro(h3); \
-		W ## ro(h5); \
-		W ## ro(h7); \
+		W ## ro(h1);                       \
+		W ## ro(h3);                       \
+		W ## ro(h5);                       \
+		W ## ro(h7);                       \
 	} while (0)
-
+
+

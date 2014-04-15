@@ -177,45 +177,44 @@
 #define CBx_(n)     CBx__(n)
 #define CBx__(n)    CB ## n
 
-#define CB0   SPH_C64(0x243F6A8885A308D3)
-#define CB1   SPH_C64(0x13198A2E03707344)
-#define CB2   SPH_C64(0xA4093822299F31D0)
-#define CB3   SPH_C64(0x082EFA98EC4E6C89)
-#define CB4   SPH_C64(0x452821E638D01377)
-#define CB5   SPH_C64(0xBE5466CF34E90C6C)
-#define CB6   SPH_C64(0xC0AC29B7C97C50DD)
-#define CB7   SPH_C64(0x3F84D5B5B5470917)
-#define CB8   SPH_C64(0x9216D5D98979FB1B)
-#define CB9   SPH_C64(0xD1310BA698DFB5AC)
-#define CBA   SPH_C64(0x2FFD72DBD01ADFB7)
-#define CBB   SPH_C64(0xB8E1AFED6A267E96)
-#define CBC   SPH_C64(0xBA7C9045F12C7F99)
-#define CBD   SPH_C64(0x24A19947B3916CF7)
-#define CBE   SPH_C64(0x0801F2E2858EFC16)
-#define CBF   SPH_C64(0x636920D871574E69)
+#define CB0         0x243F6A8885A308D3UL
+#define CB1         0x13198A2E03707344UL
+#define CB2         0xA4093822299F31D0UL
+#define CB3         0x082EFA98EC4E6C89UL
+#define CB4         0x452821E638D01377UL
+#define CB5         0xBE5466CF34E90C6CUL
+#define CB6         0xC0AC29B7C97C50DDUL
+#define CB7         0x3F84D5B5B5470917UL
+#define CB8         0x9216D5D98979FB1BUL
+#define CB9         0xD1310BA698DFB5ACUL
+#define CBA         0x2FFD72DBD01ADFB7UL
+#define CBB         0xB8E1AFED6A267E96UL
+#define CBC         0xBA7C9045F12C7F99UL
+#define CBD         0x24A19947B3916CF7UL
+#define CBE         0x0801F2E2858EFC16UL
+#define CBF         0x636920D871574E69UL
 
-
-__constant ulong BLAKE_IV512[8] = {
-	SPH_C64(0x6A09E667F3BCC908), SPH_C64(0xBB67AE8584CAA73B),
-	SPH_C64(0x3C6EF372FE94F82B), SPH_C64(0xA54FF53A5F1D36F1),
-	SPH_C64(0x510E527FADE682D1), SPH_C64(0x9B05688C2B3E6C1F),
-	SPH_C64(0x1F83D9ABFB41BD6B), SPH_C64(0x5BE0CD19137E2179)
-};
 
-__constant ulong salt_zero_big[4] = { 0, 0, 0, 0 };
 
-#define GB(m0, m1, c0, c1, a, b, c, d)   do { \
-		a = SPH_T64(a + b + (m0 ^ c1)); \
-		d = SPH_ROTR64(d ^ a, 32); \
-		c = SPH_T64(c + d); \
-		b = SPH_ROTR64(b ^ c, 25); \
-		a = SPH_T64(a + b + (m1 ^ c0)); \
-		d = SPH_ROTR64(d ^ a, 16); \
-		c = SPH_T64(c + d); \
-		b = SPH_ROTR64(b ^ c, 11); \
-	} while (0)
+__constant ulong BLAKE_INI[] = {
+	 0x6A09E667F3BCC908UL, 0xBB67AE8584CAA73BUL,
+	 0x3C6EF372FE94F82BUL, 0xA54FF53A5F1D36F1UL,
+	 0x510E527FADE682D1UL, 0x9B05688C2B3E6C1FUL,
+	 0x1F83D9ABFB41BD6BUL, 0x5BE0CD19137E2179UL
+};
 
-#define ROUND_B(r)   do { \
+
+#define GB(m0, m1, c0, c1, a, b, c, d)  \
+		a = a + b + (m0 ^ c1);          \
+		d = SPH_ROTR64(d ^ a, 32);      \
+		c = c + d;                      \
+		b = SPH_ROTR64(b ^ c, 25);      \
+		a = a + b + (m1 ^ c0);          \
+		d = SPH_ROTR64(d ^ a, 16);      \
+		c = c + d;                      \
+		b = SPH_ROTR64(b ^ c, 11);
+
+#define ROUND_B(r)                                                    \
 		GB(Mx(r, 0), Mx(r, 1), CBx(r, 0), CBx(r, 1), V0, V4, V8, VC); \
 		GB(Mx(r, 2), Mx(r, 3), CBx(r, 2), CBx(r, 3), V1, V5, V9, VD); \
 		GB(Mx(r, 4), Mx(r, 5), CBx(r, 4), CBx(r, 5), V2, V6, VA, VE); \
@@ -223,7 +222,8 @@ __constant ulong salt_zero_big[4] = { 0, 0, 0, 0 };
 		GB(Mx(r, 8), Mx(r, 9), CBx(r, 8), CBx(r, 9), V0, V5, VA, VF); \
 		GB(Mx(r, A), Mx(r, B), CBx(r, A), CBx(r, B), V1, V6, VB, VC); \
 		GB(Mx(r, C), Mx(r, D), CBx(r, C), CBx(r, D), V2, V7, V8, VD); \
-		GB(Mx(r, E), Mx(r, F), CBx(r, E), CBx(r, F), V3, V4, V9, VE); \
-	} while (0)
-
-
+		GB(Mx(r, E), Mx(r, F), CBx(r, E), CBx(r, F), V3, V4, V9, VE);
+
+
+
+
