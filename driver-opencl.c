@@ -1053,13 +1053,13 @@ static cl_int queue_scrypt_kernel(_clState *clState, dev_blk_ctx *blk, __maybe_u
 	memcpy(clState->cldata, blk->work->data, 128);
 	status = clEnqueueWriteBuffer(clState->commandQueue, clState->CLbuffer0, true, 0, 128, clState->cldata, 0, NULL,NULL);
 
-    /*
-    unsigned char * ptr = (unsigned char *)(blk->work->device_target);
-    int i;
-    printf("\n Scrypt Kernel : ");
-    for (i = 0; i < 32; i++) printf(" %02x", (unsigned char)(ptr[i]));
-    printf("\n");
-    */
+    if (opt_debughash) {
+       unsigned char * ptr = (unsigned char *)(blk->work->device_target);
+       int i;
+       printf("\n Scrypt Kernel : ");
+       for (i = 0; i < 32; i++) printf(" %02x", (unsigned char)(ptr[i]));
+       printf("\n");
+    }
 
 	CL_SET_ARG(clState->CLbuffer0);
 	CL_SET_ARG(clState->outputBuffer);
@@ -1083,17 +1083,17 @@ static cl_int queue_sph_kernel(_clState *clState, dev_blk_ctx *blk, __maybe_unus
 	flip128(clState->cldata, blk->work->data);
 	status = clEnqueueWriteBuffer(clState->commandQueue, clState->CLbuffer0, true, 0, 128, clState->cldata, 0, NULL,NULL);
 
-    /*
-    unsigned char * ptr = (unsigned char *)(blk->work->device_target);
-    int i;
-    printf("\n SPH Kernel : ");
-    for (i = 0; i < 32; i++) printf(" %02x", (unsigned char)(ptr[i]));
-    printf("\n");
-    ptr = (unsigned char *)(blk->work->data);
-    printf("\n SPH Kernel Data : ");
-    for (i = 0; i < 88; i++) printf(" %02x", (unsigned char)(ptr[i]));
-    printf("\n");
-    */
+    if (opt_debughash) {
+       unsigned char * ptr = (unsigned char *)(blk->work->device_target);
+       int i;
+       printf("\n SPH Kernel : ");
+       for (i = 0; i < 32; i++) printf(" %02x", (unsigned char)(ptr[i]));
+       printf("\n");
+       ptr = (unsigned char *)(blk->work->data);
+       printf("\n SPH Kernel Data : ");
+       for (i = 0; i < 88; i++) printf(" %02x", (unsigned char)(ptr[i]));
+       printf("\n");
+    }
 
 	CL_SET_ARG(clState->CLbuffer0);
 	CL_SET_ARG(clState->outputBuffer);
@@ -1586,21 +1586,19 @@ static int64_t opencl_scanhash(struct thr_info *thr, struct work *work,
 	/* FOUND entry is used as a counter to say how many nonces exist */
 	if ((thrdata->res[found])) {
 
-      /*
-      int j, i;
-        char * data = (char *)thrdata->res;
-        printf("\n");
-        printf("INPUT\n");
-        for (j = 0; j < 88; j++) {
-            printf(" %02x", (unsigned char)data[256 + j]);
+       if (opt_debughash) {
+          int j, i;
+          char * data = (char *)thrdata->res;
+          printf("INPUT\n");
+          for (j = 0; j < 88; j++) {
+              printf(" %02x", (unsigned char)data[256 + j]);
+          }
+          printf("\n");
+          printf("RESULT\n");
+          for (j = 0; j < 64; j++) {
+             printf(" %02x", (unsigned char)data[256 + 128 + j]);
+          }
         }
-
-        printf("\n");
-        printf("RESULT\n");
-        for (j = 0; j < 64; j++) {
-            printf(" %02x", (unsigned char)data[256 + 128 + j]);
-        }
-      */
 
 		/* Clear the buffer again */
 		status = clEnqueueWriteBuffer(clState->commandQueue, clState->outputBuffer, CL_FALSE, 0,

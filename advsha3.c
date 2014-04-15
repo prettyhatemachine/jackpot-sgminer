@@ -58,24 +58,30 @@ static void advsha3_hash(void *state, const void *input) {
 
     uint32_t hash[16];
 
-    unsigned char * ptr = (unsigned char *)input;
-    int ii;
-    printf("hash input : ");
-    for (ii = 0; ii < 88; ii++) {
-        printf("%.2x", (unsigned char)ptr[ii]);
+    if (opt_debughash) {
+       unsigned char * ptr = (unsigned char *)input;
+       int ii;
+       printf("hash input : ");
+       for (ii = 0; ii < 88; ii++) {
+           printf("%.2x", (unsigned char)ptr[ii]);
+       }
+       printf("\n");
+       ptr = (unsigned char *)(&hash[0]);
     }
-    printf("\n");
-    ptr = (unsigned char *)(&hash[0]);
 
     sph_keccak512_init(&ctx_keccak);
     sph_keccak512 (&ctx_keccak, input, 88);
     sph_keccak512_close(&ctx_keccak, hash);
 
-    printf("after keccak : ");
-    for (ii = 0; ii < 64; ii++) {
-        printf("%.2x", (unsigned char)ptr[ii]);
+    if (opt_debughash) {
+       unsigned char * ptr = (unsigned char *)(&hash[0]);
+       int ii;
+       printf("after keccak : ");
+       for (ii = 0; ii < 64; ii++) {
+           printf("%.2x", (unsigned char)ptr[ii]);
+       }
+       printf("\n");
     }
-    printf("\n");
 
     unsigned int round_mask = (
        (unsigned int)(((unsigned char *)input)[84]) <<  0 |
@@ -86,8 +92,7 @@ static void advsha3_hash(void *state, const void *input) {
     unsigned int round;
     unsigned int round_method;
     for (round = 0; round < round_max; round++) {
-
-        round_method = hash[0] & 3;
+       round_method = hash[0] & 3;
         switch (round_method) {
           case 0:
                sph_blake512_init(&ctx_blake);
@@ -110,12 +115,15 @@ static void advsha3_hash(void *state, const void *input) {
                sph_skein512_close(&ctx_skein, hash);
                break;
         }
-    printf("round %d method %d : ", round, round_method);
-    for (ii = 0; ii < 64; ii++) {
-        printf("%.2x", (unsigned char)ptr[ii]);
-    }
-    printf("\n");
-
+        if (opt_debughash) {
+           unsigned char * ptr = (unsigned char *)(&hash[0]);
+           int ii;
+           printf("round %d method %d : ", round, round_method);
+           for (ii = 0; ii < 64; ii++) {
+               printf("%.2x", (unsigned char)ptr[ii]);
+           }
+           printf("\n");
+        }
     }
 	memcpy(state, hash, 32);
 }
@@ -126,9 +134,7 @@ void advsha3_regenhash(struct work *work) {
      uint32_t *ohash = (uint32_t *)(work->hash);
      be32enc_vect(data, (const uint32_t *)work->data, 22);
      data[19] = htobe32(*nonce);
-
      advsha3_hash(ohash, data);
-
 }
 
 

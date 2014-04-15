@@ -1131,6 +1131,8 @@ extern double best_diff;
 extern struct timeval block_timeval;
 extern char *workpadding1;
 extern char *workpadding2;
+extern bool opt_debug;
+extern bool opt_debughash;
 
 typedef struct {
 	cl_uint ctx_a; cl_uint ctx_b; cl_uint ctx_c; cl_uint ctx_d;

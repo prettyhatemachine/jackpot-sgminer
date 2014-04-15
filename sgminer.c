@@ -1070,7 +1070,7 @@ char *set_difficulty_multiplier(char *arg)
 	if (!(arg && arg[0]))
 		return "Invalid parameters for set difficulty multiplier";
 	opt_diff_mult = strtod(arg, endptr);
-	if (opt_diff_mult == 0 || endptr == arg)
+	if ((opt_diff_mult == 0) || (endptr == arg))
 		return "Invalid value passed to set difficulty multiplier";
 
 	return NULL;
@@ -6170,7 +6170,7 @@ static void rebuild_nonce(struct work *work, uint32_t nonce)
 			break;
 	}
 
-    if (opt_debug) {
+    if (opt_debughash) {
 		char *htarget = bin2hex(work->data, 88);
 		applog(LOG_DEBUG, "REGEN DATA : %s", htarget);
 		htarget = bin2hex(work->hash, 32);
