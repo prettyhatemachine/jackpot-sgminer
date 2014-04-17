@@ -1,8 +1,5 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Filename for AdvSHA3 optimised kernel */
-#undef ADVSHA3_KERNNAME
-
 /* Filename for Alexey Karimov's optimised kernel for Catalyst >=13.4 */
 #undef ALEXKARNEW_KERNNAME
 
@@ -295,6 +292,9 @@
 
 /* Filename for InkCoin optimised kernel */
 #undef INKCOIN_KERNNAME
+
+/* Filename for JackPotCoin(AdvSHA3) optimised kernel */
+#undef JACKPOTCOIN_KERNNAME
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */

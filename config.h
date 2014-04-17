@@ -1,9 +1,6 @@
 /* config.h.  Generated from config.h.in by configure.  */
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Filename for AdvSHA3 optimised kernel */
-#define ADVSHA3_KERNNAME "advsha3"
-
 /* Filename for Alexey Karimov's optimised kernel for Catalyst >=13.4 */
 #define ALEXKARNEW_KERNNAME "alexkarnew"
 
@@ -14,7 +11,7 @@
 #define ANIMECOIN_KERNNAME "animecoin"
 
 /* Define to the number of bits in type 'ptrdiff_t'. */
-#define BITSIZEOF_PTRDIFF_T 32
+#define BITSIZEOF_PTRDIFF_T 0
 
 /* Define to the number of bits in type 'sig_atomic_t'. */
 #define BITSIZEOF_SIG_ATOMIC_T 0
@@ -26,7 +23,7 @@
 #define BITSIZEOF_WCHAR_T 0
 
 /* Define to the number of bits in type 'wint_t'. */
-#define BITSIZEOF_WINT_T 16
+#define BITSIZEOF_WINT_T 0
 
 /* Filename for original scrypt kernel */
 #define CKOLIVAS_KERNNAME "ckolivas"
@@ -129,7 +126,7 @@
 /* #undef HAVE_LIBWINPTHREAD */
 
 /* Define to 1 if the system has the type `long long int'. */
-#define HAVE_LONG_LONG_INT 1
+/* #undef HAVE_LONG_LONG_INT */
 
 /* Define to 1 if mmap()'s MAP_ANONYMOUS flag is available after including
    config.h and <sys/mman.h>. */
@@ -283,7 +280,7 @@
 #define HAVE_UNISTD_H 1
 
 /* Define to 1 if the system has the type `unsigned long long int'. */
-#define HAVE_UNSIGNED_LONG_LONG_INT 1
+/* #undef HAVE_UNSIGNED_LONG_LONG_INT */
 
 /* Define if __attribute__((warn_unused_result)) */
 #define HAVE_WARN_UNUSED_RESULT 1
@@ -296,6 +293,9 @@
 
 /* Filename for InkCoin optimised kernel */
 #define INKCOIN_KERNNAME "inkcoin"
+
+/* Filename for JackPotCoin(AdvSHA3) optimised kernel */
+#define JACKPOTCOIN_KERNNAME "jackpotcoin"
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */

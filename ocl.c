@@ -494,10 +494,10 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize)
 			strcpy(filename, GROESTLCOIN_KERNNAME".cl");
 			strcpy(binaryfilename, GROESTLCOIN_KERNNAME);
 			break;
-        case KL_ADVSHA3:
-			applog(LOG_WARNING, "Kernel AdvSHA3 is experimental.");
-			strcpy(filename, ADVSHA3_KERNNAME".cl");
-			strcpy(binaryfilename, ADVSHA3_KERNNAME);
+        case KL_JACKPOTCOIN:
+			applog(LOG_WARNING, "Kernel JackPotCoin(AdvSHA3) is experimental.");
+			strcpy(filename, JACKPOTCOIN_KERNNAME".cl");
+			strcpy(binaryfilename, JACKPOTCOIN_KERNNAME);
 			break;
         case KL_GIVECOIN:
 			applog(LOG_WARNING, "Kernel GIVECOIN is experimental.");

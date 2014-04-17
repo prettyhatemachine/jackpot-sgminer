@@ -1786,7 +1786,7 @@ static void gen_gbt_work(struct pool *pool, struct work *work)
 	memcpy(work->data + 4 + 32 + 32, &pool->curtime, 4);
 	memcpy(work->data + 4 + 32 + 32 + 4, &pool->gbt_bits, 4);
 
-    if (gpus[0].kernel == KL_ADVSHA3) {
+    if (gpus[0].kernel == KL_JACKPOTCOIN) {
        memcpy(work->data + 4 + 32 + 32 + 4 + 4 + 4,     &pool->gbt_reserved_00, 4);
        memcpy(work->data + 4 + 32 + 32 + 4 + 4 + 4 + 4, &pool->gbt_reserved_01, 4);
     }
@@ -1806,7 +1806,7 @@ static void gen_gbt_work(struct pool *pool, struct work *work)
 	free(merkleroot);
 	memset(work->data + 4 + 32 + 32 + 4 + 4, 0, 4); /* nonce */
 
-    if (gpus[0].kernel == KL_ADVSHA3) {
+    if (gpus[0].kernel == KL_JACKPOTCOIN) {
 	   hex2bin(work->data + 4 + 32 + 32 + 4 + 4 + 4 + 4 + 4, workpadding2, 40);
     }
     else {
@@ -1863,9 +1863,9 @@ static bool gbt_decode(struct pool *pool, json_t *res_val)
 	submitold = json_is_true(json_object_get(res_val, "submitold"));
 	bits = json_string_value(json_object_get(res_val, "bits"));
 	workid = json_string_value(json_object_get(res_val, "workid"));
-    if (gpus[0].kernel == KL_ADVSHA3) {
+    if (gpus[0].kernel == KL_JACKPOTCOIN) {
    	   superblock = json_integer_value(json_object_get(res_val, "superblock"));
-	   reserved = json_integer_value(json_object_get(res_val, "reserved"));
+	   reserved = json_integer_value(json_object_get(res_val, "roundmask"));
     }
 	if (!previousblockhash || !target || !coinbasetxn || !longpollid ||
 	    !expires || !version || !curtime || !bits) {
@@ -4321,8 +4321,8 @@ void write_config(FILE *fcfg)
 				case KL_TWECOIN:
 					fprintf(fcfg, TWECOIN_KERNNAME);
                     break;
-                case KL_ADVSHA3:
-					fprintf(fcfg, ADVSHA3_KERNNAME);
+                case KL_JACKPOTCOIN:
+					fprintf(fcfg, JACKPOTCOIN_KERNNAME);
                     break;
                 case KL_GIVECOIN:
 					fprintf(fcfg, GIVECOIN_KERNNAME);
@@ -6166,7 +6166,7 @@ static void rebuild_nonce(struct work *work, uint32_t nonce)
 		case KL_TWECOIN:
 			twecoin_regenhash(work);
 			break;
-        case KL_ADVSHA3:
+        case KL_JACKPOTCOIN:
 			advsha3_regenhash(work);
 			break;
 		default:

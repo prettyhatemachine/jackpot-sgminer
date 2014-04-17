@@ -158,7 +158,7 @@ typedef long int gl_int64_t;
 typedef __int64 gl_int64_t;
 #  define int64_t gl_int64_t
 #  define GL_INT64_T
-# elif 1
+# elif 0
 #  undef int64_t
 typedef long long int gl_int64_t;
 #  define int64_t gl_int64_t
@@ -179,7 +179,7 @@ typedef unsigned long int gl_uint64_t;
 typedef unsigned __int64 gl_uint64_t;
 #  define uint64_t gl_uint64_t
 #  define GL_UINT64_T
-# elif 1
+# elif 0
 #  undef uint64_t
 typedef unsigned long long int gl_uint64_t;
 #  define uint64_t gl_uint64_t
@@ -272,7 +272,7 @@ typedef unsigned long int gl_uintptr_t;
    public header files. */
 
 #undef intmax_t
-#if 1 && LONG_MAX >> 30 == 1
+#if 0 && LONG_MAX >> 30 == 1
 typedef long long int gl_intmax_t;
 # define intmax_t gl_intmax_t
 #elif defined GL_INT64_T
@@ -283,7 +283,7 @@ typedef long int gl_intmax_t;
 #endif
 
 #undef uintmax_t
-#if 1 && ULONG_MAX >> 31 == 1
+#if 0 && ULONG_MAX >> 31 == 1
 typedef unsigned long long int gl_uintmax_t;
 # define uintmax_t gl_uintmax_t
 #elif defined GL_UINT64_T
@@ -464,9 +464,9 @@ typedef int _verify_intmax_size[sizeof (intmax_t) == sizeof (uintmax_t)
 # endif
 #else
 # define PTRDIFF_MIN  \
-    _STDINT_MIN (1, 32, 0)
+    _STDINT_MIN (1, 0, 0)
 # define PTRDIFF_MAX  \
-    _STDINT_MAX (1, 32, 0)
+    _STDINT_MAX (1, 0, 0)
 #endif
 
 /* sig_atomic_t limits */
@@ -519,9 +519,9 @@ typedef int _verify_intmax_size[sizeof (intmax_t) == sizeof (uintmax_t)
 #undef WINT_MIN
 #undef WINT_MAX
 #define WINT_MIN  \
-   _STDINT_MIN (0, 16, 0)
+   _STDINT_MIN (0, 0, 0)
 #define WINT_MAX  \
-   _STDINT_MAX (0, 16, 0)
+   _STDINT_MAX (0, 0, 0)
 
 #endif /* !defined __cplusplus || defined __STDC_LIMIT_MACROS */
 
@@ -556,21 +556,21 @@ typedef int _verify_intmax_size[sizeof (intmax_t) == sizeof (uintmax_t)
 # define INT64_C(x) x##L
 #elif defined _MSC_VER
 # define INT64_C(x) x##i64
-#elif 1
+#elif 0
 # define INT64_C(x) x##LL
 #endif
 #if ULONG_MAX >> 31 >> 31 >> 1 == 1
 # define UINT64_C(x) x##UL
 #elif defined _MSC_VER
 # define UINT64_C(x) x##ui64
-#elif 1
+#elif 0
 # define UINT64_C(x) x##ULL
 #endif
 
 /* 7.18.4.2. Macros for greatest-width integer constants */
 
 #undef INTMAX_C
-#if 1 && LONG_MAX >> 30 == 1
+#if 0 && LONG_MAX >> 30 == 1
 # define INTMAX_C(x)   x##LL
 #elif defined GL_INT64_T
 # define INTMAX_C(x)   INT64_C(x)
@@ -579,7 +579,7 @@ typedef int _verify_intmax_size[sizeof (intmax_t) == sizeof (uintmax_t)
 #endif
 
 #undef UINTMAX_C
-#if 1 && ULONG_MAX >> 31 == 1
+#if 0 && ULONG_MAX >> 31 == 1
 # define UINTMAX_C(x)  x##ULL
 #elif defined GL_UINT64_T
 # define UINTMAX_C(x)  UINT64_C(x)

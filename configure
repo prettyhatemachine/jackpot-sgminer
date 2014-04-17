@@ -16810,7 +16810,7 @@ _ACEOF
 
 
 cat >>confdefs.h <<_ACEOF
-#define ADVSHA3_KERNNAME "advsha3"
+#define JACKPOTCOIN_KERNNAME "jackpotcoin"
 _ACEOF
 
 

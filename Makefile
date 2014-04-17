@@ -81,7 +81,7 @@ am_sgminer_OBJECTS = sgminer-sgminer.$(OBJEXT) sgminer-api.$(OBJEXT) \
 	sgminer-fuguecoin.$(OBJEXT) sgminer-inkcoin.$(OBJEXT) \
 	sgminer-animecoin.$(OBJEXT) sgminer-groestlcoin.$(OBJEXT) \
 	sgminer-sifcoin.$(OBJEXT) sgminer-twecoin.$(OBJEXT) \
-	sgminer-advsha3.$(OBJEXT)
+	sgminer-jackpotcoin.$(OBJEXT)
 sgminer_OBJECTS = $(am_sgminer_OBJECTS)
 am__DEPENDENCIES_1 =
 sgminer_DEPENDENCIES = $(am__DEPENDENCIES_1) lib/libgnu.a \
@@ -204,11 +204,11 @@ AUTOCONF = ${SHELL} /home/Administrator/sgminer/missing --run autoconf
 AUTOHEADER = ${SHELL} /home/Administrator/sgminer/missing --run autoheader
 AUTOMAKE = ${SHELL} /home/Administrator/sgminer/missing --run automake-1.11
 AWK = gawk
-BITSIZEOF_PTRDIFF_T = 32
+BITSIZEOF_PTRDIFF_T = 0
 BITSIZEOF_SIG_ATOMIC_T = 0
 BITSIZEOF_SIZE_T = 0
 BITSIZEOF_WCHAR_T = 0
-BITSIZEOF_WINT_T = 16
+BITSIZEOF_WINT_T = 0
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -O2 -msse2
@@ -276,7 +276,7 @@ HAVE_DECL_STRNLEN = 1
 HAVE_DECL_STRSIGNAL = 1
 HAVE_DECL_STRTOK_R = 1
 HAVE_INTTYPES_H = 1
-HAVE_LONG_LONG_INT = 1
+HAVE_LONG_LONG_INT = 0
 HAVE_MBSLEN = 0
 HAVE_MEMCHR = 1
 HAVE_MEMPCPY = 1
@@ -302,7 +302,7 @@ HAVE_SYS_BITYPES_H = 0
 HAVE_SYS_INTTYPES_H = 0
 HAVE_SYS_TYPES_H = 1
 HAVE_TYPE_VOLATILE_SIG_ATOMIC_T = 1
-HAVE_UNSIGNED_LONG_LONG_INT = 1
+HAVE_UNSIGNED_LONG_LONG_INT = 0
 HAVE_WCHAR_H = 1
 HAVE_WCHAR_T = 1
 INCLUDE_NEXT = include_next
@@ -485,8 +485,8 @@ sgminer_SOURCES := sgminer.c api.c elist.h miner.h compat.h \
 	quarkcoin.c quarkcoin.h myriadcoin-groestl.c \
 	myriadcoin-groestl.h fuguecoin.c fuguecoin.h inkcoin.c \
 	inkcoin.h animecoin.c animecoin.h groestlcoin.c groestlcoin.h \
-	sifcoin.c sifcoin.h twecoin.c twecoin.h advsha3.c advsha3.h \
-	kernel/*.cl
+	sifcoin.c sifcoin.h twecoin.c twecoin.h jackpotcoin.c \
+	jackpotcoin.h kernel/*.cl
 bin_SCRIPTS = $(top_srcdir)/kernel/*.cl
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
@@ -632,7 +632,6 @@ distclean-compile:
 	-rm -f *.tab.c
 
 include ./$(DEPDIR)/sgminer-adl.Po
-include ./$(DEPDIR)/sgminer-advsha3.Po
 include ./$(DEPDIR)/sgminer-animecoin.Po
 include ./$(DEPDIR)/sgminer-api.Po
 include ./$(DEPDIR)/sgminer-darkcoin.Po
@@ -641,6 +640,7 @@ include ./$(DEPDIR)/sgminer-findnonce.Po
 include ./$(DEPDIR)/sgminer-fuguecoin.Po
 include ./$(DEPDIR)/sgminer-groestlcoin.Po
 include ./$(DEPDIR)/sgminer-inkcoin.Po
+include ./$(DEPDIR)/sgminer-jackpotcoin.Po
 include ./$(DEPDIR)/sgminer-logging.Po
 include ./$(DEPDIR)/sgminer-myriadcoin-groestl.Po
 include ./$(DEPDIR)/sgminer-ocl.Po
@@ -1000,21 +1000,21 @@ sgminer-twecoin.obj: twecoin.c
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sgminer_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sgminer-twecoin.obj `if test -f 'twecoin.c'; then $(CYGPATH_W) 'twecoin.c'; else $(CYGPATH_W) '$(srcdir)/twecoin.c'; fi`
 
-sgminer-advsha3.o: advsha3.c
-	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sgminer_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT sgminer-advsha3.o -MD -MP -MF $(DEPDIR)/sgminer-advsha3.Tpo -c -o sgminer-advsha3.o `test -f 'advsha3.c' || echo '$(srcdir)/'`advsha3.c
-	$(AM_V_at)$(am__mv) $(DEPDIR)/sgminer-advsha3.Tpo $(DEPDIR)/sgminer-advsha3.Po
+sgminer-jackpotcoin.o: jackpotcoin.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sgminer_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT sgminer-jackpotcoin.o -MD -MP -MF $(DEPDIR)/sgminer-jackpotcoin.Tpo -c -o sgminer-jackpotcoin.o `test -f 'jackpotcoin.c' || echo '$(srcdir)/'`jackpotcoin.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/sgminer-jackpotcoin.Tpo $(DEPDIR)/sgminer-jackpotcoin.Po
 #	$(AM_V_CC) \
-#	source='advsha3.c' object='sgminer-advsha3.o' libtool=no \
+#	source='jackpotcoin.c' object='sgminer-jackpotcoin.o' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
-#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sgminer_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sgminer-advsha3.o `test -f 'advsha3.c' || echo '$(srcdir)/'`advsha3.c
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sgminer_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sgminer-jackpotcoin.o `test -f 'jackpotcoin.c' || echo '$(srcdir)/'`jackpotcoin.c
 
-sgminer-advsha3.obj: advsha3.c
-	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sgminer_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT sgminer-advsha3.obj -MD -MP -MF $(DEPDIR)/sgminer-advsha3.Tpo -c -o sgminer-advsha3.obj `if test -f 'advsha3.c'; then $(CYGPATH_W) 'advsha3.c'; else $(CYGPATH_W) '$(srcdir)/advsha3.c'; fi`
-	$(AM_V_at)$(am__mv) $(DEPDIR)/sgminer-advsha3.Tpo $(DEPDIR)/sgminer-advsha3.Po
+sgminer-jackpotcoin.obj: jackpotcoin.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sgminer_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT sgminer-jackpotcoin.obj -MD -MP -MF $(DEPDIR)/sgminer-jackpotcoin.Tpo -c -o sgminer-jackpotcoin.obj `if test -f 'jackpotcoin.c'; then $(CYGPATH_W) 'jackpotcoin.c'; else $(CYGPATH_W) '$(srcdir)/jackpotcoin.c'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/sgminer-jackpotcoin.Tpo $(DEPDIR)/sgminer-jackpotcoin.Po
 #	$(AM_V_CC) \
-#	source='advsha3.c' object='sgminer-advsha3.obj' libtool=no \
+#	source='jackpotcoin.c' object='sgminer-jackpotcoin.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
-#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sgminer_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sgminer-advsha3.obj `if test -f 'advsha3.c'; then $(CYGPATH_W) 'advsha3.c'; else $(CYGPATH_W) '$(srcdir)/advsha3.c'; fi`
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sgminer_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sgminer-jackpotcoin.obj `if test -f 'jackpotcoin.c'; then $(CYGPATH_W) 'jackpotcoin.c'; else $(CYGPATH_W) '$(srcdir)/jackpotcoin.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
