@@ -381,13 +381,13 @@ enum cl_kernels {
 	KL_CKOLIVAS,
 	KL_PSW,
 	KL_ZUIKKIS,
-    KL_JACKPOTCOIN,
     KL_GIVECOIN,
 	KL_QUARKCOIN,	// kernels starting from this will have difficulty calculated by using quarkcoin algorithm
 	KL_QUBITCOIN,
 	KL_INKCOIN,
 	KL_ANIMECOIN,
     KL_SIFCOIN,
+    KL_JACKPOTCOIN,
 	KL_DARKCOIN,	// kernels starting from this will have difficulty calculated by using bitcoin algorithm
 	KL_MYRIADCOIN_GROESTL,
 	KL_FUGUECOIN,
@@ -1332,6 +1332,11 @@ struct pool {
 struct work {
 	unsigned char	data[128];
 	unsigned char	midstate[32];
+	uint64_t a00; uint64_t a10; uint64_t a20; uint64_t a30; uint64_t a40;
+	uint64_t a01; uint64_t a11; uint64_t a21; uint64_t a31; uint64_t a41;
+	uint64_t a02; uint64_t a12; uint64_t a22; uint64_t a32; uint64_t a42;
+	uint64_t a03; uint64_t a13; uint64_t a23; uint64_t a33; uint64_t a43;
+	uint64_t a04; uint64_t a14; uint64_t a24; uint64_t a34; uint64_t a44;
 	unsigned char	target[32];
 	unsigned char	hash[32];
 

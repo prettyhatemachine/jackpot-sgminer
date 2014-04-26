@@ -63,6 +63,10 @@ char *curly = ":D";
 #include "myriadcoin-groestl.h"
 #include "quarkcoin.h"
 #include "qubitcoin.h"
+#include "sph/sph_types.h"
+#define __constant
+#include "kernel/keccak.cl"
+#undef __constant
 
 #if defined(unix) || defined(__APPLE__)
 	#include <errno.h>
@@ -1598,15 +1602,79 @@ static bool jobj_binary(const json_t *obj, const char *key,
 
 static void calc_midstate(struct work *work)
 {
-	unsigned char data[64];
-	uint32_t *data32 = (uint32_t *)data;
-	sha256_ctx ctx;
+	unsigned char cldata[128];
+	flip128(cldata, work->data);
+/*	
+        fprintf(stderr, "block: ");
+        unsigned i;
+        for (i = 0; i < 88; i++) fprintf(stderr, "0x%02x, ", cldata[i]);
+        fprintf(stderr, "\n");
+*/
 
-	flip64(data32, work->data);
-	sha256_init(&ctx);
-	sha256_update(&ctx, data, 64);
-	memcpy(work->midstate, ctx.h, 32);
-	endian_flip32(work->midstate, work->midstate);
+	sph_u64 c0x, c1x, c2x, c3x, c4x;
+	sph_u64 a00 =  sph_dec64le(cldata + 8 * 0);
+	sph_u64 a10 = ~sph_dec64le(cldata + 8 * 1);
+	sph_u64 a20 = ~sph_dec64le(cldata + 8 * 2);
+	sph_u64 a30 =  sph_dec64le(cldata + 8 * 3);
+	sph_u64 a40 =  sph_dec64le(cldata + 8 * 4);
+	sph_u64 a01 =  sph_dec64le(cldata + 8 * 5);
+	sph_u64 a11 =  sph_dec64le(cldata + 8 * 6);
+	sph_u64 a21 =  sph_dec64le(cldata + 8 * 7);
+	sph_u64 a31 = ~sph_dec64le(cldata + 8 * 8);
+	sph_u64 a41 =  0;
+	sph_u64 a02 =  0;
+	sph_u64 a12 =  0;
+	sph_u64 a22 =  0xFFFFFFFFFFFFFFFFUL;
+	sph_u64 a32 =  0;
+	sph_u64 a42 =  0;
+	sph_u64 a03 =  0;
+	sph_u64 a13 =  0;
+	sph_u64 a23 =  0xFFFFFFFFFFFFFFFFUL;
+	sph_u64 a33 =  0;
+	sph_u64 a43 =  0;
+	sph_u64 a04 =  0xFFFFFFFFFFFFFFFFUL;
+	sph_u64 a14 =  0;
+	sph_u64 a24 =  0;
+	sph_u64 a34 =  0;
+	sph_u64 a44 =  0;
+	KECCAK_F_1600;
+
+	a00 ^=  sph_dec64le(cldata + 8 * 9);
+	a10 ^=  sph_dec64le(cldata + 8 * 10);
+	a20 ^=  0x01;
+	a31 ^=  0x8000000000000000ULL;
+
+	work->a00 = a00;
+	work->a10 = a10;
+	work->a20 = a20;
+	work->a30 = a30;
+	work->a40 = a40;
+
+	work->a01 = a01;
+	work->a11 = a11;
+	work->a21 = a21;
+	work->a31 = a31;
+	work->a41 = a41;
+
+	work->a02 = a02;
+	work->a12 = a12;
+	work->a22 = a22;
+	work->a32 = a32;
+	work->a42 = a42;
+
+	work->a03 = a03;
+	work->a13 = a13;
+	work->a23 = a23;
+	work->a33 = a33;
+	work->a43 = a43;
+
+	work->a04 = a04;
+	work->a14 = a14;
+	work->a24 = a24;
+	work->a34 = a34;
+	work->a44 = a44;
+
+//	fprintf(stderr, "%llx %llx %llx %llx\n", a00, a10, a20, a30, a40);
 }
 
 static struct work *make_work(void)

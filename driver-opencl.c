@@ -1081,6 +1081,7 @@ static cl_int queue_sph_kernel(_clState *clState, dev_blk_ctx *blk, __maybe_unus
 
  	le_target = *(cl_ulong *)(blk->work->device_target + 24);
 	flip128(clState->cldata, blk->work->data);
+
 	status = clEnqueueWriteBuffer(clState->commandQueue, clState->CLbuffer0, true, 0, 128, clState->cldata, 0, NULL,NULL);
 
     if (opt_debughash) {
@@ -1098,7 +1099,32 @@ static cl_int queue_sph_kernel(_clState *clState, dev_blk_ctx *blk, __maybe_unus
 	CL_SET_ARG(clState->CLbuffer0);
 	CL_SET_ARG(clState->outputBuffer);
 	CL_SET_ARG(le_target);
-
+	CL_SET_ARG(blk->work->a00);
+	CL_SET_ARG(blk->work->a10);
+	CL_SET_ARG(blk->work->a20);
+	CL_SET_ARG(blk->work->a30);
+	CL_SET_ARG(blk->work->a40);
+	CL_SET_ARG(blk->work->a01);
+	CL_SET_ARG(blk->work->a11);
+	CL_SET_ARG(blk->work->a21);
+	CL_SET_ARG(blk->work->a31);
+	CL_SET_ARG(blk->work->a41);
+	CL_SET_ARG(blk->work->a02);
+	CL_SET_ARG(blk->work->a12);
+	CL_SET_ARG(blk->work->a22);
+	CL_SET_ARG(blk->work->a32);
+	CL_SET_ARG(blk->work->a42);
+	CL_SET_ARG(blk->work->a03);
+	CL_SET_ARG(blk->work->a13);
+	CL_SET_ARG(blk->work->a23);
+	CL_SET_ARG(blk->work->a33);
+	CL_SET_ARG(blk->work->a43);
+	CL_SET_ARG(blk->work->a04);
+	CL_SET_ARG(blk->work->a14);
+	CL_SET_ARG(blk->work->a24);
+	CL_SET_ARG(blk->work->a34);
+	CL_SET_ARG(blk->work->a44);
+	
 	return status;
 }
 
