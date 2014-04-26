@@ -6466,7 +6466,7 @@ static void hash_sole_work(struct thr_info *mythr)
 			pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 
 			thread_reportin(mythr);
-			hashes = drv->scanhash(mythr, work, work->blk.nonce + max_nonce);
+			hashes = drv->scanhash(mythr, work, work->blk.nonce + max_nonce) / 8;
 			thread_reportout(mythr);
 
 			pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
